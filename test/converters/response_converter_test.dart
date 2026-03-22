@@ -60,13 +60,12 @@ void main() {
       expect(result.content.first.isToolRequest, isTrue);
     });
 
-    test('converts thinking chunk to empty text', () {
+    test('skips thinking chunk (empty content)', () {
       const chunk = gemma.ThinkingResponse('reasoning...');
 
       final result = convertStreamChunk(chunk);
 
-      expect(result.content.first.isText, isTrue);
-      expect(result.content.first.text, '');
+      expect(result.content, isEmpty);
     });
   });
 }

@@ -25,9 +25,17 @@ Embedder<FlutterGemmaEmbedConfig> createFlutterGemmaEmbedder({
       }
 
       // Parse optional backend preference.
-      final config = request.options != null
-          ? FlutterGemmaEmbedConfig.fromJson(request.options!)
-          : null;
+      FlutterGemmaEmbedConfig? config;
+      if (request.options != null) {
+        try {
+          config = FlutterGemmaEmbedConfig.fromJson(request.options!);
+        } catch (e) {
+          throw GenkitException(
+            'Invalid embed options: $e',
+            status: StatusCodes.INVALID_ARGUMENT,
+          );
+        }
+      }
 
       // Parse preferredBackend string to enum.
       gemma.PreferredBackend? backend;

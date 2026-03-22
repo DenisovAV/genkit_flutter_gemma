@@ -27,7 +27,7 @@ Future<void> main() async {
   // 3. Create Genkit with flutter_gemma plugin.
   final ai = Genkit(plugins: [
     GenkitFlutterGemmaPlugin(models: [
-      const FlutterGemmaModelConfig(
+      FlutterGemmaModelConfig(
         name: 'gemma-3-nano',
         modelType: ModelType.gemmaIt,
       ),

@@ -9,11 +9,11 @@ void main() {
 
     setUp(() {
       plugin = GenkitFlutterGemmaPlugin(models: [
-        const FlutterGemmaModelConfig(
+        FlutterGemmaModelConfig(
           name: 'gemma-3-nano',
           modelType: gemma.ModelType.gemmaIt,
         ),
-        const FlutterGemmaModelConfig(
+        FlutterGemmaModelConfig(
           name: 'deepseek-r1',
           modelType: gemma.ModelType.deepSeek,
           fileType: gemma.ModelFileType.binary,
@@ -60,13 +60,13 @@ void main() {
     setUp(() {
       plugin = GenkitFlutterGemmaPlugin(
         models: [
-          const FlutterGemmaModelConfig(
+          FlutterGemmaModelConfig(
             name: 'gemma-3-nano',
             modelType: gemma.ModelType.gemmaIt,
           ),
         ],
         embedders: [
-          const FlutterGemmaEmbedderConfig(name: 'embedding-gemma-300m'),
+          FlutterGemmaEmbedderConfig(name: 'embedding-gemma-300m'),
         ],
       );
     });

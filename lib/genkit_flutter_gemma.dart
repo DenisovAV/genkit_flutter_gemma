@@ -45,6 +45,7 @@ import 'package:genkit/genkit.dart';
 
 import 'src/flutter_gemma_embed_options.dart';
 import 'src/flutter_gemma_options.dart';
+import 'src/flutter_gemma_plugin.dart';
 
 export 'src/flutter_gemma_embed_options.dart' show FlutterGemmaEmbedConfig;
 export 'src/flutter_gemma_plugin.dart'
@@ -70,11 +71,13 @@ class FlutterGemmaPluginHandle {
 
   /// Returns a [ModelRef] for the given model name registered by this plugin.
   ModelRef<FlutterGemmaModelOptions> model(String name) =>
-      modelRef<FlutterGemmaModelOptions>('flutter-gemma/$name');
+      modelRef<FlutterGemmaModelOptions>(
+          '${GenkitFlutterGemmaPlugin.prefix}/$name');
 
   /// Returns an [EmbedderRef] for the given embedder name registered by this plugin.
   EmbedderRef<FlutterGemmaEmbedConfig> embedder(String name) =>
-      embedderRef<FlutterGemmaEmbedConfig>('flutter-gemma/$name');
+      embedderRef<FlutterGemmaEmbedConfig>(
+          '${GenkitFlutterGemmaPlugin.prefix}/$name');
 }
 
 /// Global convenience instance for referencing flutter-gemma models and embedders.

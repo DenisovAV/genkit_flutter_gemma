@@ -132,8 +132,8 @@ void main() {
     test('throws on null request', () async {
       final embedder = buildEmbedder();
 
-      expect(
-        () => embedder(null),
+      await expectLater(
+        embedder(null),
         throwsA(isA<GenkitException>()),
       );
     });
@@ -174,8 +174,8 @@ void main() {
     test('throws on unknown preferredBackend', () async {
       final embedder = buildEmbedder();
 
-      expect(
-        () => embedder(EmbedRequest(
+      await expectLater(
+        embedder(EmbedRequest(
           input: [DocumentData(content: [TextPart(text: 'test')])],
           options: {'preferredBackend': 'tpu'},
         )),

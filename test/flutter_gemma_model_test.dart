@@ -171,8 +171,8 @@ void main() {
     test('null request throws GenkitException', () async {
       final model = buildModel();
 
-      expect(
-        () => model(null),
+      await expectLater(
+        model(null),
         throwsA(isA<GenkitException>()),
       );
     });

@@ -146,7 +146,20 @@ Future<Uint8List?> _extractMediaBytes(
 
       // file:// path
       if (url.startsWith('file://')) {
-        final path = Uri.parse(url).toFilePath();
+        final String path;
+        try {
+          path = Uri.parse(url).toFilePath();
+        } on FormatException catch (e) {
+          throw GenkitException(
+            'Malformed file:// URI "$url": $e',
+            status: StatusCodes.INVALID_ARGUMENT,
+          );
+        } on UnsupportedError catch (e) {
+          throw GenkitException(
+            'Unsupported file:// URI "$url": $e',
+            status: StatusCodes.INVALID_ARGUMENT,
+          );
+        }
         return _readFileBytes(path);
       }
 
@@ -178,6 +191,12 @@ Future<Uint8List?> _extractMediaBytes(
           if (httpClient == null) client.close();
         }
       }
+
+      // Unrecognized URL scheme — reject explicitly.
+      throw GenkitException(
+        'Unsupported media URL scheme: $url',
+        status: StatusCodes.INVALID_ARGUMENT,
+      );
     }
   }
   return null;
@@ -217,19 +236,15 @@ _ToolResponseData? _extractToolResponse(List<Part> parts) {
 
 /// Reads file bytes with error handling and context.
 Future<Uint8List> _readFileBytes(String path) async {
-  final file = File(path);
-  if (!await file.exists()) {
-    throw GenkitException(
-      'Media file not found: $path',
-      status: StatusCodes.NOT_FOUND,
-    );
-  }
   try {
-    return await file.readAsBytes();
+    return await File(path).readAsBytes();
   } on FileSystemException catch (e) {
+    final status = e.osError?.errorCode == 2 // ENOENT
+        ? StatusCodes.NOT_FOUND
+        : StatusCodes.INTERNAL;
     throw GenkitException(
       'Failed to read media file $path: $e',
-      status: StatusCodes.INTERNAL,
+      status: status,
     );
   }
 }

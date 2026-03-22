@@ -47,7 +47,7 @@ ModelResponseChunk convertStreamChunk(gemma.ModelResponse chunk) {
       ));
     case gemma.ThinkingResponse():
       // Skip thinking chunks — internal model reasoning.
-      content.add(TextPart(text: ''));
+      break;
   }
 
   return ModelResponseChunk(

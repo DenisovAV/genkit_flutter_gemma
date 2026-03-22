@@ -32,20 +32,25 @@ Model createFlutterGemmaModel({
     name: name,
     fn: (request, context) async {
       if (request == null) {
-        return ModelResponse(
-          finishReason: FinishReason.stop,
-          message: Message(
-            role: Role.model,
-            content: [TextPart(text: '')],
-          ),
+        throw GenkitException(
+          'Model request cannot be null.',
+          status: StatusCodes.INVALID_ARGUMENT,
         );
       }
 
       // Parse config from the untyped Map.
       final configMap = request.config;
-      final config = configMap != null
-          ? FlutterGemmaModelOptions.fromJson(configMap)
-          : null;
+      final FlutterGemmaModelOptions? config;
+      try {
+        config = configMap != null
+            ? FlutterGemmaModelOptions.fromJson(configMap)
+            : null;
+      } catch (e) {
+        throw GenkitException(
+          'Invalid model config: $e',
+          status: StatusCodes.INVALID_ARGUMENT,
+        );
+      }
 
       final maxTokens = config?.maxTokens ?? 1024;
       final temperature = config?.temperature ?? 0.8;

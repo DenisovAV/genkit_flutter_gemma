@@ -69,12 +69,16 @@ Future<List<gemma.Message>> convertMessages(
       }
     } else if (role == Role.tool) {
       final toolResponse = _extractToolResponse(message.content);
-      if (toolResponse != null) {
-        result.add(gemma.Message.toolResponse(
-          toolName: toolResponse.toolName,
-          response: toolResponse.response,
-        ));
+      if (toolResponse == null) {
+        throw GenkitException(
+          'Tool message contains no ToolResponsePart.',
+          status: StatusCodes.INVALID_ARGUMENT,
+        );
       }
+      result.add(gemma.Message.toolResponse(
+        toolName: toolResponse.toolName,
+        response: toolResponse.response,
+      ));
     }
   }
 
@@ -124,20 +128,31 @@ Future<Uint8List?> _extractMediaBytes(
       // data: URI (base64)
       if (url.startsWith('data:')) {
         final commaIndex = url.indexOf(',');
-        if (commaIndex != -1) {
+        if (commaIndex == -1) {
+          throw GenkitException(
+            'Malformed data: URI (missing comma separator)',
+            status: StatusCodes.INVALID_ARGUMENT,
+          );
+        }
+        try {
           return base64Decode(url.substring(commaIndex + 1));
+        } on FormatException catch (e) {
+          throw GenkitException(
+            'Invalid base64 in media data URI: $e',
+            status: StatusCodes.INVALID_ARGUMENT,
+          );
         }
       }
 
       // file:// path
       if (url.startsWith('file://')) {
         final path = Uri.parse(url).toFilePath();
-        return File(path).readAsBytes();
+        return _readFileBytes(path);
       }
 
       // Absolute path (starts with /)
       if (url.startsWith('/')) {
-        return File(url).readAsBytes();
+        return _readFileBytes(url);
       }
 
       // HTTP/HTTPS URL — download
@@ -148,6 +163,17 @@ Future<Uint8List?> _extractMediaBytes(
           if (response.statusCode == 200) {
             return response.bodyBytes;
           }
+          throw GenkitException(
+            'Failed to download media from $url: HTTP ${response.statusCode}',
+            status: StatusCodes.INTERNAL,
+          );
+        } on GenkitException {
+          rethrow;
+        } catch (e) {
+          throw GenkitException(
+            'Failed to download media from $url: $e',
+            status: StatusCodes.INTERNAL,
+          );
         } finally {
           if (httpClient == null) client.close();
         }
@@ -187,6 +213,25 @@ _ToolResponseData? _extractToolResponse(List<Part> parts) {
     }
   }
   return null;
+}
+
+/// Reads file bytes with error handling and context.
+Future<Uint8List> _readFileBytes(String path) async {
+  final file = File(path);
+  if (!await file.exists()) {
+    throw GenkitException(
+      'Media file not found: $path',
+      status: StatusCodes.NOT_FOUND,
+    );
+  }
+  try {
+    return await file.readAsBytes();
+  } on FileSystemException catch (e) {
+    throw GenkitException(
+      'Failed to read media file $path: $e',
+      status: StatusCodes.INTERNAL,
+    );
+  }
 }
 
 class _ToolResponseData {

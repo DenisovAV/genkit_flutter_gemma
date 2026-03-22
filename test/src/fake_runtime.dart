@@ -26,11 +26,14 @@ class FakeRuntime implements FlutterGemmaRuntime {
     return modelToReturn;
   }
 
+  gemma.PreferredBackend? lastPreferredBackend;
+
   @override
   Future<gemma.EmbeddingModel> getActiveEmbedder({
     gemma.PreferredBackend? preferredBackend,
   }) async {
     getActiveEmbedderCallCount++;
+    lastPreferredBackend = preferredBackend;
     return embedderToReturn;
   }
 }

@@ -12,6 +12,7 @@ Embedder<FlutterGemmaEmbedConfig> createFlutterGemmaEmbedder({
   required FlutterGemmaRuntime runtime,
 }) {
   gemma.EmbeddingModel? cachedEmbedder;
+  gemma.PreferredBackend? cachedBackend;
 
   return Embedder<FlutterGemmaEmbedConfig>(
     name: name,
@@ -38,13 +39,22 @@ Embedder<FlutterGemmaEmbedConfig> createFlutterGemmaEmbedder({
             backend = gemma.PreferredBackend.gpu;
           case 'npu':
             backend = gemma.PreferredBackend.npu;
+          default:
+            throw GenkitException(
+              'Unknown preferredBackend: "${config.preferredBackend}". '
+              'Supported values: cpu, gpu, npu.',
+              status: StatusCodes.INVALID_ARGUMENT,
+            );
         }
       }
 
-      // Get or create embedding model.
-      cachedEmbedder ??= await runtime.getActiveEmbedder(
-        preferredBackend: backend,
-      );
+      // Get or create embedding model (invalidate on backend change).
+      if (cachedEmbedder == null || cachedBackend != backend) {
+        cachedEmbedder = await runtime.getActiveEmbedder(
+          preferredBackend: backend,
+        );
+        cachedBackend = backend;
+      }
 
       // Extract text from each document.
       final texts = request.input.map(_documentToText).toList(growable: false);

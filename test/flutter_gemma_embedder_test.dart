@@ -1,3 +1,4 @@
+import 'package:flutter_gemma/flutter_gemma.dart' as gemma;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genkit/plugin.dart';
 import 'package:genkit_flutter_gemma/src/flutter_gemma_embedder.dart';
@@ -133,6 +134,51 @@ void main() {
 
       expect(
         () => embedder(null),
+        throwsA(isA<GenkitException>()),
+      );
+    });
+
+    test('passes preferredBackend to runtime', () async {
+      fakeEmbedder.embeddingsToReturn = [
+        [1.0],
+      ];
+
+      final embedder = buildEmbedder();
+      await embedder(EmbedRequest(
+        input: [DocumentData(content: [TextPart(text: 'test')])],
+        options: {'preferredBackend': 'gpu'},
+      ));
+
+      expect(runtime.lastPreferredBackend, gemma.PreferredBackend.gpu);
+    });
+
+    test('invalidates cache when preferredBackend changes', () async {
+      fakeEmbedder.embeddingsToReturn = [
+        [1.0],
+      ];
+
+      final embedder = buildEmbedder();
+
+      await embedder(EmbedRequest(
+        input: [DocumentData(content: [TextPart(text: 'a')])],
+        options: {'preferredBackend': 'cpu'},
+      ));
+      await embedder(EmbedRequest(
+        input: [DocumentData(content: [TextPart(text: 'b')])],
+        options: {'preferredBackend': 'gpu'},
+      ));
+
+      expect(runtime.getActiveEmbedderCallCount, 2);
+    });
+
+    test('throws on unknown preferredBackend', () async {
+      final embedder = buildEmbedder();
+
+      expect(
+        () => embedder(EmbedRequest(
+          input: [DocumentData(content: [TextPart(text: 'test')])],
+          options: {'preferredBackend': 'tpu'},
+        )),
         throwsA(isA<GenkitException>()),
       );
     });

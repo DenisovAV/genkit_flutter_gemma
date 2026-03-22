@@ -13,7 +13,7 @@ class FlutterGemmaModelConfig {
     required this.name,
     required this.modelType,
     this.fileType = gemma.ModelFileType.task,
-  });
+  }) : assert(name != '', 'Model name must not be empty');
 
   /// Display name for this model (e.g. 'gemma-3-nano').
   /// Registered as 'flutter-gemma/<name>' in Genkit.
@@ -28,7 +28,8 @@ class FlutterGemmaModelConfig {
 
 /// Configuration for an embedder exposed by [GenkitFlutterGemmaPlugin].
 class FlutterGemmaEmbedderConfig {
-  const FlutterGemmaEmbedderConfig({required this.name});
+  const FlutterGemmaEmbedderConfig({required this.name})
+      : assert(name != '', 'Embedder name must not be empty');
 
   /// Display name for this embedder (e.g. 'embedding-gemma-300m').
   /// Registered as 'flutter-gemma/<name>' in Genkit.
@@ -64,10 +65,20 @@ class FlutterGemmaEmbedderConfig {
 /// `FlutterGemma.installModel()` / `FlutterGemma.installEmbedder()`.
 class GenkitFlutterGemmaPlugin extends GenkitPlugin {
   GenkitFlutterGemmaPlugin({
-    required this.models,
-    this.embedders = const [],
+    required List<FlutterGemmaModelConfig> models,
+    List<FlutterGemmaEmbedderConfig> embedders = const [],
     FlutterGemmaRuntime? runtime,
-  }) : runtime = runtime ?? const DefaultFlutterGemmaRuntime();
+  })  : models = List.unmodifiable(models),
+        embedders = List.unmodifiable(embedders),
+        runtime = runtime ?? const DefaultFlutterGemmaRuntime() {
+    // Validate name uniqueness.
+    final modelNames = models.map((c) => c.name).toSet();
+    assert(modelNames.length == models.length, 'Duplicate model names');
+    final embedderNames = embedders.map((c) => c.name).toSet();
+    assert(embedderNames.length == embedders.length, 'Duplicate embedder names');
+  }
+
+  static const _prefix = 'flutter-gemma';
 
   /// List of model configurations this plugin exposes.
   final List<FlutterGemmaModelConfig> models;
@@ -78,8 +89,11 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
   /// Runtime used to obtain inference and embedding models.
   final FlutterGemmaRuntime runtime;
 
+  /// Cache for resolved actions to avoid recreating on every resolve() call.
+  final Map<String, Action> _resolvedActions = {};
+
   @override
-  String get name => 'flutter-gemma';
+  String get name => _prefix;
 
   @override
   Future<List<ActionMetadata>> list() async {
@@ -88,7 +102,7 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
     for (final config in models) {
       metadata.add(ActionMetadata(
         actionType: 'model',
-        name: 'flutter-gemma/${config.name}',
+        name: '$_prefix/${config.name}',
         metadata: {
           'model': {
             'label': config.name,
@@ -98,7 +112,7 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
               'multiturn': true,
               'media': true,
               'tools': true,
-              'systemRole': false,
+              'systemRole': true,
               'output': ['text'],
             },
           },
@@ -109,7 +123,7 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
     for (final config in embedders) {
       metadata.add(ActionMetadata(
         actionType: 'embedder',
-        name: 'flutter-gemma/${config.name}',
+        name: '$_prefix/${config.name}',
         metadata: {
           'embedder': {
             'label': config.name,
@@ -125,33 +139,38 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
 
   @override
   Action? resolve(String actionType, String name) {
+    final cacheKey = '$actionType:$name';
+    final cached = _resolvedActions[cacheKey];
+    if (cached != null) return cached;
+
     if (actionType == 'model') {
-      final config = models.cast<FlutterGemmaModelConfig?>().firstWhere(
-            (c) => 'flutter-gemma/${c!.name}' == name,
-            orElse: () => null,
-          );
+      final config = models
+          .where((c) => '$_prefix/${c.name}' == name)
+          .firstOrNull;
       if (config == null) return null;
 
-      return createFlutterGemmaModel(
+      final action = createFlutterGemmaModel(
         name: name,
         modelType: config.modelType,
         fileType: config.fileType,
         runtime: runtime,
       );
+      _resolvedActions[cacheKey] = action;
+      return action;
     }
 
     if (actionType == 'embedder') {
-      final config =
-          embedders.cast<FlutterGemmaEmbedderConfig?>().firstWhere(
-            (c) => 'flutter-gemma/${c!.name}' == name,
-            orElse: () => null,
-          );
+      final config = embedders
+          .where((c) => '$_prefix/${c.name}' == name)
+          .firstOrNull;
       if (config == null) return null;
 
-      return createFlutterGemmaEmbedder(
+      final action = createFlutterGemmaEmbedder(
         name: name,
         runtime: runtime,
       );
+      _resolvedActions[cacheKey] = action;
+      return action;
     }
 
     return null;

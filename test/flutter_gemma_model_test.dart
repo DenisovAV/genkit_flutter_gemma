@@ -168,12 +168,13 @@ void main() {
       expect(fakeChat.receivedMessages[2].text, 'How are you?');
     });
 
-    test('null request returns empty response', () async {
+    test('null request throws GenkitException', () async {
       final model = buildModel();
-      final response = await model(null);
 
-      expect(response.message!.content.first.text, '');
-      expect(runtime.getActiveModelCallCount, 0);
+      expect(
+        () => model(null),
+        throwsA(isA<GenkitException>()),
+      );
     });
   });
 }

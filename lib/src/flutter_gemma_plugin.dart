@@ -156,13 +156,17 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
     if (cached != null) return cached;
 
     if (actionType == 'model') {
+      // Registry strips prefix before calling resolve(), so `name` is just
+      // the model name (e.g. 'function-gemma-270m-it'), not the full
+      // 'flutter-gemma/function-gemma-270m-it'.
       final config = models
-          .where((c) => '$prefix/${c.name}' == name)
+          .where((c) => c.name == name)
           .firstOrNull;
       if (config == null) return null;
 
+      final fullName = '$prefix/$name';
       final action = createFlutterGemmaModel(
-        name: name,
+        name: fullName,
         modelType: config.modelType,
         fileType: config.fileType,
         runtime: runtime,
@@ -173,12 +177,13 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
 
     if (actionType == 'embedder') {
       final config = embedders
-          .where((c) => '$prefix/${c.name}' == name)
+          .where((c) => c.name == name)
           .firstOrNull;
       if (config == null) return null;
 
+      final fullName = '$prefix/$name';
       final action = createFlutterGemmaEmbedder(
-        name: name,
+        name: fullName,
         runtime: runtime,
       );
       _resolvedActions[cacheKey] = action;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gemma/flutter_gemma.dart';
 
 import 'app_state.dart';
 import 'screens/chat_screen.dart';
@@ -6,7 +7,9 @@ import 'screens/embeddings_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/tools_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterGemma.initialize();
   runApp(const App());
 }
 

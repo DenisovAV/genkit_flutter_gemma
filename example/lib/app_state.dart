@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:io' show Platform;
 import 'dart:math' as math;
 
@@ -84,6 +85,12 @@ class AppState extends ChangeNotifier {
   static const _modelName = 'gemma-3-1b-it';
   static const _embedderName = 'embedding-gemma-300m';
 
+  void _logError(String context, Object e, [StackTrace? stack]) {
+    debugPrint('[$context] $e');
+    if (stack != null) debugPrint('$stack');
+    developer.log('$e', name: context, error: e, stackTrace: stack);
+  }
+
   ModelRef<FlutterGemmaModelOptions> get modelRef =>
       flutterGemma.model(_modelName);
   EmbedderRef<FlutterGemmaEmbedConfig> get embedderRef =>
@@ -91,13 +98,13 @@ class AppState extends ChangeNotifier {
 
   Future<void> initialize() async {
     try {
-      await FlutterGemma.initialize();
       inferenceInstalled = FlutterGemma.hasActiveModel();
       embedderInstalled = FlutterGemma.hasActiveEmbedder();
       if (inferenceInstalled || embedderInstalled) {
         _createGenkit();
       }
-    } catch (e) {
+    } catch (e, stack) {
+      _logError('AppState.initialize', e, stack);
       error = 'Init failed: $e';
     }
     notifyListeners();
@@ -154,7 +161,8 @@ class AppState extends ChangeNotifier {
 
       inferenceInstalled = true;
       _createGenkit();
-    } catch (e) {
+    } catch (e, stack) {
+      _logError('AppState.downloadInferenceModel', e, stack);
       error = 'Download failed: $e';
     } finally {
       isDownloadingInference = false;
@@ -192,7 +200,8 @@ class AppState extends ChangeNotifier {
 
       embedderInstalled = true;
       _createGenkit();
-    } catch (e) {
+    } catch (e, stack) {
+      _logError('AppState.downloadEmbedderModel', e, stack);
       error = 'Embedder download failed: $e';
     } finally {
       isDownloadingEmbedder = false;
@@ -247,7 +256,8 @@ class AppState extends ChangeNotifier {
           isUser: false,
         ));
       }
-    } catch (e) {
+    } catch (e, stack) {
+      _logError('AppState.sendMessage', e, stack);
       chatMessages.add(ChatMessage(
         text: 'Error: $e',
         isUser: false,
@@ -285,7 +295,8 @@ class AppState extends ChangeNotifier {
         results.add(EmbeddingResult(label: texts[i], similarity: sim));
       }
       embeddingResults = results;
-    } catch (e) {
+    } catch (e, stack) {
+      _logError('AppState.computeSimilarity', e, stack);
       error = 'Embedding failed: $e';
     }
     notifyListeners();
@@ -337,7 +348,8 @@ class AppState extends ChangeNotifier {
         }
       }
       lastToolResult = buffer.toString().trim();
-    } catch (e) {
+    } catch (e, stack) {
+      _logError('AppState.generateWithTools', e, stack);
       lastToolResult = 'Error: $e';
     } finally {
       isToolGenerating = false;

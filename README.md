@@ -36,12 +36,17 @@ await FlutterGemma.installModel(modelType: ModelType.gemmaIt)
 
 // Create Genkit with plugin
 final ai = Genkit(plugins: [
-  FlutterGemmaPlugin(models: [
-    FlutterGemmaModelConfig(
-      name: 'gemma-3-nano',
-      modelType: ModelType.gemmaIt,
-    ),
-  ]),
+  GenkitFlutterGemmaPlugin(
+    models: [
+      FlutterGemmaModelConfig(
+        name: 'gemma-3-nano',
+        modelType: ModelType.gemmaIt,
+      ),
+    ],
+    embedders: [
+      FlutterGemmaEmbedderConfig(name: 'embedding-gemma-300m'),
+    ],
+  ),
 ]);
 
 // Generate
@@ -102,10 +107,33 @@ final response = await ai.generate(
 );
 ```
 
+## Embeddings
+
+```dart
+// Install embedding model (host app responsibility)
+await FlutterGemma.installEmbedder()
+    .fromAsset('assets/embeddinggemma-300M.tflite')
+    .install();
+
+// Generate embeddings
+final embeddings = await ai.embed(
+  embedder: flutterGemma.embedder('embedding-gemma-300m'),
+  documents: [
+    DocumentData.fromText('Flutter is a UI toolkit.'),
+    DocumentData.fromText('Dart is a programming language.'),
+  ],
+);
+
+for (final embedding in embeddings) {
+  print('Vector (${embedding.embedding.length} dims): '
+      '${embedding.embedding.take(5)}...');
+}
+```
+
 ## Known Limitations
 
 - **Model installation**: The plugin does NOT manage model installation. The host app must install models via `FlutterGemma.installModel()` before using the plugin.
 - **System role**: flutter_gemma doesn't support a native system role. System messages are prepended to the first user message.
 - **Image URLs**: Only `data:` URIs (base64) are supported for media. Remote URLs cannot be resolved on-device.
 - **Session lifecycle**: Each Genkit generate call creates a new chat session, which may add latency for the first call.
-- **Embedder**: Not yet supported via this plugin (flutter_gemma has embedding support, but Genkit Dart SDK embedder API integration is pending).
+- **Embedder model installation**: The host app must install the embedding model via `FlutterGemma.installEmbedder()` before using the embedder.

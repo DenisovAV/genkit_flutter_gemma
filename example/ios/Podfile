@@ -1,5 +1,4 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+platform :ios, '16.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -28,7 +27,8 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  use_frameworks! :linkage => :static
+  use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
@@ -39,5 +39,27 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    if target.name == 'Runner'
+      target.build_configurations.each do |config|
+        # Force load TensorFlowLiteSelectTfOps only on device (no simulator slice)
+        config.build_settings['OTHER_LDFLAGS[sdk=iphoneos*]'] ||= '$(inherited)'
+        config.build_settings['OTHER_LDFLAGS[sdk=iphoneos*]'] += ' -force_load $(PODS_ROOT)/TensorFlowLiteSelectTfOps/Frameworks/TensorFlowLiteSelectTfOps.xcframework/ios-arm64/TensorFlowLiteSelectTfOps.framework/TensorFlowLiteSelectTfOps'
+      end
+    end
+  end
+
+  # Patch xcconfig files to exclude TensorFlowLiteSelectTfOps from simulator linking
+  Dir.glob(File.join(installer.sandbox.root, 'Target Support Files', 'Pods-Runner', '*.xcconfig')).each do |xcconfig_path|
+    content = File.read(xcconfig_path)
+    if content.include?('-framework "TensorFlowLiteSelectTfOps"')
+      # Remove from generic OTHER_LDFLAGS, keep it only for device via build setting
+      content.gsub!('-framework "TensorFlowLiteSelectTfOps"', '')
+      # Add device-only linking
+      unless content.include?('OTHER_LDFLAGS[sdk=iphoneos*]')
+        content += "\nOTHER_LDFLAGS[sdk=iphoneos*] = $(inherited) -framework \"TensorFlowLiteSelectTfOps\"\n"
+      end
+      File.write(xcconfig_path, content)
+    end
   end
 end

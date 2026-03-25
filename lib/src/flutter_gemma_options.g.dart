@@ -15,6 +15,7 @@ class FlutterGemmaModelOptions {
     this.supportImage,
     this.supportAudio,
     this.isThinking,
+    this.randomSeed,
   });
 
   final int? maxTokens;
@@ -24,6 +25,7 @@ class FlutterGemmaModelOptions {
   final bool? supportImage;
   final bool? supportAudio;
   final bool? isThinking;
+  final int? randomSeed;
 
   static final $schema = _FlutterGemmaModelOptionsSchema();
 
@@ -36,6 +38,7 @@ class FlutterGemmaModelOptions {
       supportImage: json['supportImage'] as bool?,
       supportAudio: json['supportAudio'] as bool?,
       isThinking: json['isThinking'] as bool?,
+      randomSeed: json['randomSeed'] as int?,
     );
   }
 
@@ -48,6 +51,7 @@ class FlutterGemmaModelOptions {
       if (supportImage != null) 'supportImage': supportImage,
       if (supportAudio != null) 'supportAudio': supportAudio,
       if (isThinking != null) 'isThinking': isThinking,
+      if (randomSeed != null) 'randomSeed': randomSeed,
     };
   }
 }
@@ -88,6 +92,10 @@ class _FlutterGemmaModelOptionsSchema {
           'type': 'boolean',
           'description':
               'Whether to enable thinking mode (DeepSeek-style reasoning).',
+        },
+        'randomSeed': {
+          'type': 'integer',
+          'description': 'Random seed for deterministic output. Defaults to 1.',
         },
       },
     };

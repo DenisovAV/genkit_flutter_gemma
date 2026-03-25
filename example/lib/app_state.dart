@@ -81,6 +81,12 @@ class AppState extends ChangeNotifier {
   // Tools
   String? lastToolResult;
   bool isToolGenerating = false;
+  bool _agentMode = false;
+  bool get agentMode => _agentMode;
+  set agentMode(bool value) {
+    _agentMode = value;
+    notifyListeners();
+  }
 
   static const _modelName = 'gemma-3-1b-it';
   static const _embedderName = 'embedding-gemma-300m';
@@ -334,17 +340,18 @@ class AppState extends ChangeNotifier {
         prompt: prompt,
         tools: [getWeather, calculate],
         config: FlutterGemmaModelOptions(maxTokens: maxTokens),
-        returnToolRequests: true,
+        returnToolRequests: !_agentMode,
+        maxTurns: _agentMode ? 5 : null,
       );
 
       final parts = response.message?.content ?? [];
       final buffer = StringBuffer();
       for (final part in parts) {
-        if (part is TextPart) {
+        if (part.isText) {
           buffer.writeln(part.text);
-        } else if (part is ToolRequestPart) {
+        } else if (part.isToolRequest) {
           buffer.writeln(
-              'Tool call: ${part.toolRequest.name}(${part.toolRequest.input})');
+              'Tool call: ${part.toolRequest!.name}(${part.toolRequest!.input})');
         }
       }
       lastToolResult = buffer.toString().trim();

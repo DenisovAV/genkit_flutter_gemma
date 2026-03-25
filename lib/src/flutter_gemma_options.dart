@@ -28,4 +28,7 @@ abstract class $FlutterGemmaModelOptions {
 
   /// Whether to enable thinking mode (DeepSeek-style reasoning).
   bool? get isThinking;
+
+  /// Random seed for deterministic output. Defaults to 1.
+  int? get randomSeed;
 }

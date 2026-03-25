@@ -35,22 +35,32 @@ void main() {
     });
 
     test('resolve() returns null for non-model action types', () {
-      final result = plugin.resolve('flow', 'flutter-gemma/gemma-3-nano');
+      final result = plugin.resolve('flow', 'gemma-3-nano');
       expect(result, isNull);
     });
 
     test('resolve() returns null for unknown model name', () {
-      final result = plugin.resolve('model', 'flutter-gemma/unknown');
+      final result = plugin.resolve('model', 'unknown');
       expect(result, isNull);
     });
 
     test('resolve() returns Model for known model', () {
-      final result = plugin.resolve(
-        'model',
-        'flutter-gemma/gemma-3-nano',
-      );
+      final result = plugin.resolve('model', 'gemma-3-nano');
       expect(result, isNotNull);
       expect(result, isA<Model>());
+    });
+
+    test('resolve() caches actions and returns same instance', () {
+      final first = plugin.resolve('model', 'gemma-3-nano');
+      final second = plugin.resolve('model', 'gemma-3-nano');
+      expect(identical(first, second), isTrue);
+    });
+
+    test('dispose() clears cached actions', () {
+      final before = plugin.resolve('model', 'gemma-3-nano');
+      plugin.dispose();
+      final after = plugin.resolve('model', 'gemma-3-nano');
+      expect(identical(before, after), isFalse);
     });
   });
 
@@ -81,16 +91,13 @@ void main() {
     });
 
     test('resolve() returns Embedder for known embedder', () {
-      final result = plugin.resolve(
-        'embedder',
-        'flutter-gemma/embedding-gemma-300m',
-      );
+      final result = plugin.resolve('embedder', 'embedding-gemma-300m');
       expect(result, isNotNull);
       expect(result, isA<Embedder>());
     });
 
     test('resolve() returns null for unknown embedder', () {
-      final result = plugin.resolve('embedder', 'flutter-gemma/unknown');
+      final result = plugin.resolve('embedder', 'unknown');
       expect(result, isNull);
     });
   });

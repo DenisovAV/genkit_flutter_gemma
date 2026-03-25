@@ -6,11 +6,17 @@ import 'package:genkit/plugin.dart';
 /// Maps:
 /// - Text → [ModelResponse] with [TextPart]
 /// - Function call → [ModelResponse] with [ToolRequestPart]
+/// - Reasoning → prepended [ReasoningPart] before text/tool content
 ModelResponse convertFinalResponse(
   String fullText, {
   gemma.FunctionCallResponse? functionCall,
+  String? reasoningText,
 }) {
   final content = <Part>[];
+
+  if (reasoningText != null && reasoningText.isNotEmpty) {
+    content.add(ReasoningPart(reasoning: reasoningText));
+  }
 
   if (functionCall != null) {
     content.add(ToolRequestPart(
@@ -45,9 +51,14 @@ ModelResponseChunk convertStreamChunk(gemma.ModelResponse chunk) {
       content.add(ToolRequestPart(
         toolRequest: ToolRequest(name: name, input: args),
       ));
-    case gemma.ThinkingResponse():
-      // Skip thinking chunks — internal model reasoning.
-      break;
+    case gemma.ThinkingResponse(:final content):
+      if (content.isNotEmpty) {
+        // Outer variable is shadowed; use the list from enclosing scope via return.
+        return ModelResponseChunk(
+          role: Role.model,
+          content: [ReasoningPart(reasoning: content)],
+        );
+      }
   }
 
   return ModelResponseChunk(

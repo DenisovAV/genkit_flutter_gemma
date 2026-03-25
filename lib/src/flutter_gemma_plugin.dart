@@ -192,4 +192,10 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
 
     return null;
   }
+
+  /// Clears the resolved action cache, allowing actions to be recreated
+  /// on the next [resolve] call.
+  void dispose() {
+    _resolvedActions.clear();
+  }
 }

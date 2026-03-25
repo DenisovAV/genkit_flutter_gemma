@@ -73,6 +73,17 @@ class _ToolsScreenState extends State<ToolsScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
+                  SwitchListTile(
+                    title: const Text('Agent mode'),
+                    subtitle: const Text(
+                      'Auto-execute tools and return final answer',
+                    ),
+                    value: state.agentMode,
+                    onChanged: state.isToolGenerating
+                        ? null
+                        : (v) => state.agentMode = v,
+                  ),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: _promptController,
                     decoration: const InputDecoration(

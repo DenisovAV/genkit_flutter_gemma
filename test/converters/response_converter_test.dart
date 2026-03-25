@@ -35,6 +35,28 @@ void main() {
       final result = convertFinalResponse('text');
       expect(result.finishReason, FinishReason.stop);
     });
+
+    test('includes reasoning text as ReasoningPart', () {
+      final result = convertFinalResponse(
+        'answer',
+        reasoningText: 'thinking step by step',
+      );
+
+      final parts = result.message!.content;
+      expect(parts, hasLength(2));
+      expect(parts[0].isReasoning, isTrue);
+      expect(parts[0].reasoning, 'thinking step by step');
+      expect(parts[1].isText, isTrue);
+      expect(parts[1].text, 'answer');
+    });
+
+    test('skips empty reasoning text', () {
+      final result = convertFinalResponse('answer', reasoningText: '');
+
+      final parts = result.message!.content;
+      expect(parts, hasLength(1));
+      expect(parts.first.isText, isTrue);
+    });
   });
 
   group('convertStreamChunk', () {
@@ -60,8 +82,18 @@ void main() {
       expect(result.content.first.isToolRequest, isTrue);
     });
 
-    test('skips thinking chunk (empty content)', () {
+    test('converts thinking chunk to ReasoningPart', () {
       const chunk = gemma.ThinkingResponse('reasoning...');
+
+      final result = convertStreamChunk(chunk);
+
+      expect(result.content, hasLength(1));
+      expect(result.content.first.isReasoning, isTrue);
+      expect(result.content.first.reasoning, 'reasoning...');
+    });
+
+    test('returns empty content for empty thinking chunk', () {
+      const chunk = gemma.ThinkingResponse('');
 
       final result = convertStreamChunk(chunk);
 

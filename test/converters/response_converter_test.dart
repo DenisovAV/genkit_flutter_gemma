@@ -57,6 +57,15 @@ void main() {
       expect(parts, hasLength(1));
       expect(parts.first.isText, isTrue);
     });
+
+    test('reasoning-only response has no empty TextPart', () {
+      final result = convertFinalResponse('', reasoningText: 'thinking...');
+
+      final parts = result.message!.content;
+      expect(parts, hasLength(1));
+      expect(parts.first.isReasoning, isTrue);
+      expect(parts.first.reasoning, 'thinking...');
+    });
   });
 
   group('convertStreamChunk', () {

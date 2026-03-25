@@ -30,8 +30,9 @@ Model createFlutterGemmaModel({
   bool? cachedSupportImage;
   bool? cachedSupportAudio;
 
-  // Serialized queue: prevents concurrent access to the model.
-  Completer<void>? pending;
+  // Future-chain lock: each caller awaits the previous one, ensuring
+  // only one generation runs at a time against the native model.
+  Future<void> lock = Future.value();
 
   return Model(
     name: name,
@@ -43,12 +44,11 @@ Model createFlutterGemmaModel({
         );
       }
 
-      // Wait for any pending operation to complete.
-      while (pending != null) {
-        await pending!.future;
-      }
+      final prev = lock;
       final completer = Completer<void>();
-      pending = completer;
+      lock = completer.future;
+
+      await prev;
 
       try {
         return await _executeGeneration(
@@ -68,7 +68,6 @@ Model createFlutterGemmaModel({
           },
         );
       } finally {
-        pending = null;
         completer.complete();
       }
     },

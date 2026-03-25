@@ -25,7 +25,7 @@ ModelResponse convertFinalResponse(
         input: functionCall.args,
       ),
     ));
-  } else {
+  } else if (fullText.isNotEmpty) {
     content.add(TextPart(text: fullText));
   }
 
@@ -53,7 +53,7 @@ ModelResponseChunk convertStreamChunk(gemma.ModelResponse chunk) {
       ));
     case gemma.ThinkingResponse(:final content):
       if (content.isNotEmpty) {
-        // Outer variable is shadowed; use the list from enclosing scope via return.
+        // Destructured 'content' shadows outer list; early return avoids conflict.
         return ModelResponseChunk(
           role: Role.model,
           content: [ReasoningPart(reasoning: content)],

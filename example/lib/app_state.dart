@@ -347,7 +347,9 @@ class AppState extends ChangeNotifier {
       final parts = response.message?.content ?? [];
       final buffer = StringBuffer();
       for (final part in parts) {
-        if (part.isText) {
+        if (part.isReasoning) {
+          buffer.writeln('[Reasoning] ${part.reasoning}');
+        } else if (part.isText) {
           buffer.writeln(part.text);
         } else if (part.isToolRequest) {
           buffer.writeln(

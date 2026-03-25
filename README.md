@@ -6,7 +6,8 @@ Genkit Dart plugin for [flutter_gemma](https://pub.dev/packages/flutter_gemma) â
 
 - Wraps `flutter_gemma` as a Genkit model provider
 - Supports text generation (blocking and streaming)
-- Multimodal input (images, audio)
+- Embeddings via `FlutterGemmaEmbedder`
+- Multimodal input (images, audio) â€” supports `data:` URIs, `file://` paths, and `http(s)://` URLs
 - Function calling / tool use
 - Thinking mode (DeepSeek-style reasoning)
 - Configurable via `@Schema()`-annotated options
@@ -110,17 +111,18 @@ final response = await ai.generate(
 ## Embeddings
 
 ```dart
-// Install embedding model (host app responsibility)
+// Install embedding model + tokenizer (host app responsibility)
 await FlutterGemma.installEmbedder()
-    .fromAsset('assets/embeddinggemma-300M.tflite')
+    .modelFromNetwork('https://huggingface.co/.../embeddinggemma-300M.tflite')
+    .tokenizerFromNetwork('https://huggingface.co/.../sentencepiece.model')
     .install();
 
 // Generate embeddings
 final embeddings = await ai.embed(
   embedder: flutterGemma.embedder('embedding-gemma-300m'),
   documents: [
-    DocumentData.fromText('Flutter is a UI toolkit.'),
-    DocumentData.fromText('Dart is a programming language.'),
+    DocumentData(content: [TextPart(text: 'Flutter is a UI toolkit.')]),
+    DocumentData(content: [TextPart(text: 'Dart is a programming language.')]),
   ],
 );
 
@@ -132,8 +134,5 @@ for (final embedding in embeddings) {
 
 ## Known Limitations
 
-- **Model installation**: The plugin does NOT manage model installation. The host app must install models via `FlutterGemma.installModel()` before using the plugin.
+- **Model installation**: The plugin does NOT manage model installation. The host app must install models via `FlutterGemma.installModel()` and embedders via `FlutterGemma.installEmbedder()` before using the plugin.
 - **System role**: flutter_gemma doesn't support a native system role. System messages are prepended to the first user message.
-- **Image URLs**: Only `data:` URIs (base64) are supported for media. Remote URLs cannot be resolved on-device.
-- **Session lifecycle**: Each Genkit generate call creates a new chat session, which may add latency for the first call.
-- **Embedder model installation**: The host app must install the embedding model via `FlutterGemma.installEmbedder()` before using the embedder.

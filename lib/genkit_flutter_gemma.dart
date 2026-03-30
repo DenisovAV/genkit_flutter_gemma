@@ -39,7 +39,7 @@
 /// );
 /// print(response.text);
 /// ```
-library genkit_flutter_gemma;
+library;
 
 import 'package:genkit/genkit.dart';
 

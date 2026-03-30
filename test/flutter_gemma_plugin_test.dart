@@ -35,22 +35,32 @@ void main() {
     });
 
     test('resolve() returns null for non-model action types', () {
-      final result = plugin.resolve('flow', 'flutter-gemma/gemma-3-nano');
+      final result = plugin.resolve('flow', 'gemma-3-nano');
       expect(result, isNull);
     });
 
     test('resolve() returns null for unknown model name', () {
-      final result = plugin.resolve('model', 'flutter-gemma/unknown');
+      final result = plugin.resolve('model', 'unknown');
       expect(result, isNull);
     });
 
     test('resolve() returns Model for known model', () {
-      final result = plugin.resolve(
-        'model',
-        'flutter-gemma/gemma-3-nano',
-      );
+      final result = plugin.resolve('model', 'gemma-3-nano');
       expect(result, isNotNull);
       expect(result, isA<Model>());
+    });
+
+    test('resolve() caches actions and returns same instance', () {
+      final first = plugin.resolve('model', 'gemma-3-nano');
+      final second = plugin.resolve('model', 'gemma-3-nano');
+      expect(identical(first, second), isTrue);
+    });
+
+    test('dispose() clears cached actions', () {
+      final before = plugin.resolve('model', 'gemma-3-nano');
+      plugin.dispose();
+      final after = plugin.resolve('model', 'gemma-3-nano');
+      expect(identical(before, after), isFalse);
     });
   });
 
@@ -81,16 +91,13 @@ void main() {
     });
 
     test('resolve() returns Embedder for known embedder', () {
-      final result = plugin.resolve(
-        'embedder',
-        'flutter-gemma/embedding-gemma-300m',
-      );
+      final result = plugin.resolve('embedder', 'embedding-gemma-300m');
       expect(result, isNotNull);
       expect(result, isA<Embedder>());
     });
 
     test('resolve() returns null for unknown embedder', () {
-      final result = plugin.resolve('embedder', 'flutter-gemma/unknown');
+      final result = plugin.resolve('embedder', 'unknown');
       expect(result, isNull);
     });
   });
@@ -133,6 +140,28 @@ void main() {
 
       expect(json, {'maxTokens': 512, 'temperature': 0.9});
       expect(json.containsKey('topK'), isFalse);
+    });
+
+    test('fromJson handles randomSeed and toolChoice', () {
+      final options = FlutterGemmaModelOptions.fromJson({
+        'randomSeed': 42,
+        'toolChoice': 'required',
+      });
+
+      expect(options.randomSeed, 42);
+      expect(options.toolChoice, 'required');
+    });
+
+    test('toJson includes randomSeed and toolChoice', () {
+      final options = FlutterGemmaModelOptions(
+        randomSeed: 42,
+        toolChoice: 'none',
+      );
+
+      final json = options.toJson();
+
+      expect(json['randomSeed'], 42);
+      expect(json['toolChoice'], 'none');
     });
 
     test('schema provides JSON Schema', () {

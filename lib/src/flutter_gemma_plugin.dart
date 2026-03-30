@@ -20,7 +20,7 @@ class FlutterGemmaModelConfig {
   }
 
   /// Display name for this model (e.g. 'gemma-3-nano').
-  /// Registered as 'flutter-gemma/<name>' in Genkit.
+  /// Registered as `flutter-gemma/<name>` in Genkit.
   final String name;
 
   /// The flutter_gemma model architecture type.
@@ -40,7 +40,7 @@ class FlutterGemmaEmbedderConfig {
   }
 
   /// Display name for this embedder (e.g. 'embedding-gemma-300m').
-  /// Registered as 'flutter-gemma/<name>' in Genkit.
+  /// Registered as `flutter-gemma/<name>` in Genkit.
   final String name;
 }
 
@@ -191,5 +191,11 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
     }
 
     return null;
+  }
+
+  /// Clears the resolved action cache, allowing actions to be recreated
+  /// on the next [resolve] call.
+  void dispose() {
+    _resolvedActions.clear();
   }
 }

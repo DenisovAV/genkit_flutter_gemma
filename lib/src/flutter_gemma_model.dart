@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_gemma/flutter_gemma.dart' as gemma;
 import 'package:genkit/plugin.dart';
 
@@ -28,6 +30,10 @@ Model createFlutterGemmaModel({
   bool? cachedSupportImage;
   bool? cachedSupportAudio;
 
+  // Future-chain lock: each caller awaits the previous one, ensuring
+  // only one generation runs at a time against the native model.
+  Future<void> lock = Future.value();
+
   return Model(
     name: name,
     fn: (request, context) async {
@@ -38,94 +44,149 @@ Model createFlutterGemmaModel({
         );
       }
 
-      // Parse config from the untyped Map.
-      final configMap = request.config;
-      final FlutterGemmaModelOptions? config;
+      final prev = lock;
+      final completer = Completer<void>();
+      lock = completer.future;
+
+      await prev;
+
       try {
-        config = configMap != null
-            ? FlutterGemmaModelOptions.fromJson(configMap)
-            : null;
-      } catch (e) {
-        throw GenkitException(
-          'Invalid model config: $e',
-          status: StatusCodes.INVALID_ARGUMENT,
+        return await _executeGeneration(
+          request: request,
+          context: context,
+          modelType: modelType,
+          runtime: runtime,
+          cachedModel: cachedModel,
+          cachedMaxTokens: cachedMaxTokens,
+          cachedSupportImage: cachedSupportImage,
+          cachedSupportAudio: cachedSupportAudio,
+          onModelCached: (model, maxTokens, supportImage, supportAudio) {
+            cachedModel = model;
+            cachedMaxTokens = maxTokens;
+            cachedSupportImage = supportImage;
+            cachedSupportAudio = supportAudio;
+          },
         );
-      }
-
-      final maxTokens = config?.maxTokens ?? 1024;
-      final temperature = config?.temperature ?? 0.8;
-      final topK = config?.topK ?? 1;
-      final topP = config?.topP;
-      final supportImage = config?.supportImage ?? false;
-      final supportAudio = config?.supportAudio ?? false;
-      final isThinking = config?.isThinking ?? false;
-
-      // Get or create InferenceModel (cached if params match).
-      final needsNewModel = cachedModel == null ||
-          cachedMaxTokens != maxTokens ||
-          cachedSupportImage != supportImage ||
-          cachedSupportAudio != supportAudio;
-
-      if (needsNewModel) {
-        cachedModel = await runtime.getActiveModel(
-          maxTokens: maxTokens,
-          supportImage: supportImage,
-          supportAudio: supportAudio,
-        );
-        cachedMaxTokens = maxTokens;
-        cachedSupportImage = supportImage;
-        cachedSupportAudio = supportAudio;
-      }
-
-      final model = cachedModel!;
-
-      // Convert tools.
-      final gemmaTools = convertTools(request.tools);
-      final supportsFunctionCalls = gemmaTools.isNotEmpty;
-
-      // Create chat session.
-      final chat = await model.createChat(
-        temperature: temperature,
-        topK: topK,
-        topP: topP,
-        supportImage: supportImage,
-        supportAudio: supportAudio,
-        tools: gemmaTools,
-        supportsFunctionCalls: supportsFunctionCalls,
-        isThinking: isThinking,
-        modelType: modelType,
-      );
-
-      // Convert and add messages.
-      final gemmaMessages = await convertMessages(request.messages);
-      for (final msg in gemmaMessages) {
-        await chat.addQueryChunk(msg);
-      }
-
-      // Generate response.
-      if (context.streamingRequested) {
-        return _generateStreaming(chat, context.sendChunk);
-      } else {
-        return _generateBlocking(chat);
+      } finally {
+        completer.complete();
       }
     },
   );
 }
 
+/// Executes the generation logic, extracted for readability.
+Future<ModelResponse> _executeGeneration({
+  required ModelRequest request,
+  required ActionFnArg<ModelResponseChunk, ModelRequest, void> context,
+  required gemma.ModelType modelType,
+  required FlutterGemmaRuntime runtime,
+  required gemma.InferenceModel? cachedModel,
+  required int? cachedMaxTokens,
+  required bool? cachedSupportImage,
+  required bool? cachedSupportAudio,
+  required void Function(gemma.InferenceModel, int, bool, bool) onModelCached,
+}) async {
+  // Parse config from the untyped Map.
+  final configMap = request.config;
+  final FlutterGemmaModelOptions? config;
+  try {
+    config = configMap != null
+        ? FlutterGemmaModelOptions.fromJson(configMap)
+        : null;
+  } catch (e) {
+    throw GenkitException(
+      'Invalid model config: $e',
+      status: StatusCodes.INVALID_ARGUMENT,
+    );
+  }
+
+  final maxTokens = config?.maxTokens ?? 1024;
+  final temperature = config?.temperature ?? 0.8;
+  final topK = config?.topK ?? 1;
+  final topP = config?.topP;
+  final randomSeed = config?.randomSeed ?? 1;
+  final supportImage = config?.supportImage ?? false;
+  final supportAudio = config?.supportAudio ?? false;
+  final isThinking = config?.isThinking ?? false;
+  final gemmaToolChoice = switch (config?.toolChoice) {
+    'required' => gemma.ToolChoice.required,
+    'none' => gemma.ToolChoice.none,
+    _ => gemma.ToolChoice.auto,
+  };
+
+  // Get or create InferenceModel (cached if params match).
+  final needsNewModel = cachedModel == null ||
+      cachedMaxTokens != maxTokens ||
+      cachedSupportImage != supportImage ||
+      cachedSupportAudio != supportAudio;
+
+  gemma.InferenceModel model;
+  if (needsNewModel) {
+    model = await runtime.getActiveModel(
+      maxTokens: maxTokens,
+      supportImage: supportImage,
+      supportAudio: supportAudio,
+    );
+    onModelCached(model, maxTokens, supportImage, supportAudio);
+  } else {
+    model = cachedModel;
+  }
+
+  // Convert tools.
+  final gemmaTools = convertTools(request.tools);
+  final supportsFunctionCalls = gemmaTools.isNotEmpty;
+
+  // Create chat session.
+  final chat = await model.createChat(
+    temperature: temperature,
+    randomSeed: randomSeed,
+    topK: topK,
+    topP: topP,
+    supportImage: supportImage,
+    supportAudio: supportAudio,
+    tools: gemmaTools,
+    supportsFunctionCalls: supportsFunctionCalls,
+    isThinking: isThinking,
+    modelType: modelType,
+    toolChoice: gemmaToolChoice,
+  );
+
+  // Convert and add messages.
+  final gemmaMessages = await convertMessages(request.messages);
+  for (final msg in gemmaMessages) {
+    await chat.addQueryChunk(msg);
+  }
+
+  // Generate response.
+  final stopwatch = Stopwatch()..start();
+  if (context.streamingRequested) {
+    return _generateStreaming(chat, context.sendChunk, stopwatch);
+  } else {
+    return _generateBlocking(chat, stopwatch);
+  }
+}
+
 /// Generates a blocking (non-streaming) response.
-Future<ModelResponse> _generateBlocking(gemma.InferenceChat chat) async {
+Future<ModelResponse> _generateBlocking(
+  gemma.InferenceChat chat,
+  Stopwatch stopwatch,
+) async {
   final response = await chat.generateChatResponse();
+  final latencyMs = stopwatch.elapsedMilliseconds.toDouble();
 
   switch (response) {
     case gemma.TextResponse(:final token):
-      return convertFinalResponse(token);
+      return convertFinalResponse(token, latencyMs: latencyMs);
     case gemma.FunctionCallResponse(:final name, :final args):
       return convertFinalResponse(
         '',
-        functionCall: gemma.FunctionCallResponse(name: name, args: args),
+        functionCalls: [gemma.FunctionCallResponse(name: name, args: args)],
+        latencyMs: latencyMs,
       );
+    case gemma.ParallelFunctionCallResponse(:final calls):
+      return convertFinalResponse('', functionCalls: calls, latencyMs: latencyMs);
     case gemma.ThinkingResponse(:final content):
-      return convertFinalResponse(content);
+      return convertFinalResponse('', reasoningText: content, latencyMs: latencyMs);
   }
 }
 
@@ -133,9 +194,11 @@ Future<ModelResponse> _generateBlocking(gemma.InferenceChat chat) async {
 Future<ModelResponse> _generateStreaming(
   gemma.InferenceChat chat,
   void Function(ModelResponseChunk) sendChunk,
+  Stopwatch stopwatch,
 ) async {
   final fullText = StringBuffer();
-  gemma.FunctionCallResponse? lastFunctionCall;
+  final reasoningText = StringBuffer();
+  final functionCalls = <gemma.FunctionCallResponse>[];
 
   await for (final chunk in chat.generateChatResponseAsync()) {
     sendChunk(convertStreamChunk(chunk));
@@ -144,14 +207,19 @@ Future<ModelResponse> _generateStreaming(
       case gemma.TextResponse(:final token):
         fullText.write(token);
       case gemma.FunctionCallResponse(:final name, :final args):
-        lastFunctionCall = gemma.FunctionCallResponse(name: name, args: args);
-      case gemma.ThinkingResponse():
-        break;
+        functionCalls.add(gemma.FunctionCallResponse(name: name, args: args));
+      case gemma.ParallelFunctionCallResponse(:final calls):
+        functionCalls.addAll(calls);
+      case gemma.ThinkingResponse(:final content):
+        reasoningText.write(content);
     }
   }
 
   return convertFinalResponse(
     fullText.toString(),
-    functionCall: lastFunctionCall,
+    functionCalls: functionCalls.isNotEmpty ? functionCalls : null,
+    reasoningText:
+        reasoningText.isNotEmpty ? reasoningText.toString() : null,
+    latencyMs: stopwatch.elapsedMilliseconds.toDouble(),
   );
 }

@@ -6,7 +6,7 @@ part of 'flutter_gemma_options.dart';
 // SchemaGenerator
 // **************************************************************************
 
-class FlutterGemmaModelOptions {
+class FlutterGemmaModelOptions implements $FlutterGemmaModelOptions {
   FlutterGemmaModelOptions({
     this.maxTokens,
     this.temperature,
@@ -15,15 +15,28 @@ class FlutterGemmaModelOptions {
     this.supportImage,
     this.supportAudio,
     this.isThinking,
+    this.randomSeed,
+    this.toolChoice,
   });
 
+  @override
   final int? maxTokens;
+  @override
   final double? temperature;
+  @override
   final int? topK;
+  @override
   final double? topP;
+  @override
   final bool? supportImage;
+  @override
   final bool? supportAudio;
+  @override
   final bool? isThinking;
+  @override
+  final int? randomSeed;
+  @override
+  final String? toolChoice;
 
   static final $schema = _FlutterGemmaModelOptionsSchema();
 
@@ -36,6 +49,8 @@ class FlutterGemmaModelOptions {
       supportImage: json['supportImage'] as bool?,
       supportAudio: json['supportAudio'] as bool?,
       isThinking: json['isThinking'] as bool?,
+      randomSeed: json['randomSeed'] as int?,
+      toolChoice: json['toolChoice'] as String?,
     );
   }
 
@@ -48,6 +63,8 @@ class FlutterGemmaModelOptions {
       if (supportImage != null) 'supportImage': supportImage,
       if (supportAudio != null) 'supportAudio': supportAudio,
       if (isThinking != null) 'isThinking': isThinking,
+      if (randomSeed != null) 'randomSeed': randomSeed,
+      if (toolChoice != null) 'toolChoice': toolChoice,
     };
   }
 }
@@ -88,6 +105,16 @@ class _FlutterGemmaModelOptionsSchema {
           'type': 'boolean',
           'description':
               'Whether to enable thinking mode (DeepSeek-style reasoning).',
+        },
+        'randomSeed': {
+          'type': 'integer',
+          'description': 'Random seed for deterministic output. Defaults to 1.',
+        },
+        'toolChoice': {
+          'type': 'string',
+          'description':
+              "Tool choice mode: 'auto', 'required', or 'none'. Defaults to 'auto'.",
+          'enum': ['auto', 'required', 'none'],
         },
       },
     };

@@ -59,6 +59,8 @@ class FakeInferenceModel extends gemma.InferenceModel {
   @override
   gemma.InferenceChat? get chat => null;
 
+  gemma.ToolChoice? lastToolChoice;
+
   @override
   Future<gemma.InferenceChat> createChat({
     double temperature = .8,
@@ -73,8 +75,10 @@ class FakeInferenceModel extends gemma.InferenceModel {
     bool? supportsFunctionCalls,
     bool isThinking = false,
     gemma.ModelType? modelType,
+    gemma.ToolChoice toolChoice = gemma.ToolChoice.auto,
   }) async {
     createChatCallCount++;
+    lastToolChoice = toolChoice;
     return chatToReturn ?? FakeInferenceChat();
   }
 
@@ -152,14 +156,20 @@ class FakeEmbeddingModel implements gemma.EmbeddingModel {
   List<String> lastTexts = [];
 
   @override
-  Future<List<double>> generateEmbedding(String text) async {
+  Future<List<double>> generateEmbedding(
+    String text, {
+    gemma.TaskType taskType = gemma.TaskType.retrievalQuery,
+  }) async {
     generateEmbeddingCallCount++;
     lastTexts = [text];
     return embeddingsToReturn.isNotEmpty ? embeddingsToReturn.first : [];
   }
 
   @override
-  Future<List<List<double>>> generateEmbeddings(List<String> texts) async {
+  Future<List<List<double>>> generateEmbeddings(
+    List<String> texts, {
+    gemma.TaskType taskType = gemma.TaskType.retrievalQuery,
+  }) async {
     generateEmbeddingsCallCount++;
     lastTexts = texts;
     return embeddingsToReturn;

@@ -6,20 +6,26 @@ import 'package:genkit/plugin.dart';
 /// Maps:
 /// - Text → [ModelResponse] with [TextPart]
 /// - Function call → [ModelResponse] with [ToolRequestPart]
+/// - Reasoning → prepended [ReasoningPart] before text/tool content
 ModelResponse convertFinalResponse(
   String fullText, {
-  gemma.FunctionCallResponse? functionCall,
+  List<gemma.FunctionCallResponse>? functionCalls,
+  String? reasoningText,
+  double? latencyMs,
 }) {
   final content = <Part>[];
 
-  if (functionCall != null) {
-    content.add(ToolRequestPart(
-      toolRequest: ToolRequest(
-        name: functionCall.name,
-        input: functionCall.args,
-      ),
-    ));
-  } else {
+  if (reasoningText != null && reasoningText.isNotEmpty) {
+    content.add(ReasoningPart(reasoning: reasoningText));
+  }
+
+  if (functionCalls != null && functionCalls.isNotEmpty) {
+    for (final call in functionCalls) {
+      content.add(ToolRequestPart(
+        toolRequest: ToolRequest(name: call.name, input: call.args),
+      ));
+    }
+  } else if (fullText.isNotEmpty) {
     content.add(TextPart(text: fullText));
   }
 
@@ -29,6 +35,7 @@ ModelResponse convertFinalResponse(
       role: Role.model,
       content: content,
     ),
+    latencyMs: latencyMs,
   );
 }
 
@@ -45,9 +52,20 @@ ModelResponseChunk convertStreamChunk(gemma.ModelResponse chunk) {
       content.add(ToolRequestPart(
         toolRequest: ToolRequest(name: name, input: args),
       ));
-    case gemma.ThinkingResponse():
-      // Skip thinking chunks — internal model reasoning.
-      break;
+    case gemma.ParallelFunctionCallResponse(:final calls):
+      for (final call in calls) {
+        content.add(ToolRequestPart(
+          toolRequest: ToolRequest(name: call.name, input: call.args),
+        ));
+      }
+    case gemma.ThinkingResponse(:final content):
+      if (content.isNotEmpty) {
+        // Destructured 'content' shadows outer list; early return avoids conflict.
+        return ModelResponseChunk(
+          role: Role.model,
+          content: [ReasoningPart(reasoning: content)],
+        );
+      }
   }
 
   return ModelResponseChunk(

@@ -158,29 +158,35 @@ Future<ModelResponse> _executeGeneration({
   }
 
   // Generate response.
+  final stopwatch = Stopwatch()..start();
   if (context.streamingRequested) {
-    return _generateStreaming(chat, context.sendChunk);
+    return _generateStreaming(chat, context.sendChunk, stopwatch);
   } else {
-    return _generateBlocking(chat);
+    return _generateBlocking(chat, stopwatch);
   }
 }
 
 /// Generates a blocking (non-streaming) response.
-Future<ModelResponse> _generateBlocking(gemma.InferenceChat chat) async {
+Future<ModelResponse> _generateBlocking(
+  gemma.InferenceChat chat,
+  Stopwatch stopwatch,
+) async {
   final response = await chat.generateChatResponse();
+  final latencyMs = stopwatch.elapsedMilliseconds.toDouble();
 
   switch (response) {
     case gemma.TextResponse(:final token):
-      return convertFinalResponse(token);
+      return convertFinalResponse(token, latencyMs: latencyMs);
     case gemma.FunctionCallResponse(:final name, :final args):
       return convertFinalResponse(
         '',
         functionCalls: [gemma.FunctionCallResponse(name: name, args: args)],
+        latencyMs: latencyMs,
       );
     case gemma.ParallelFunctionCallResponse(:final calls):
-      return convertFinalResponse('', functionCalls: calls);
+      return convertFinalResponse('', functionCalls: calls, latencyMs: latencyMs);
     case gemma.ThinkingResponse(:final content):
-      return convertFinalResponse('', reasoningText: content);
+      return convertFinalResponse('', reasoningText: content, latencyMs: latencyMs);
   }
 }
 
@@ -188,6 +194,7 @@ Future<ModelResponse> _generateBlocking(gemma.InferenceChat chat) async {
 Future<ModelResponse> _generateStreaming(
   gemma.InferenceChat chat,
   void Function(ModelResponseChunk) sendChunk,
+  Stopwatch stopwatch,
 ) async {
   final fullText = StringBuffer();
   final reasoningText = StringBuffer();
@@ -213,5 +220,6 @@ Future<ModelResponse> _generateStreaming(
     functionCalls: functionCalls.isNotEmpty ? functionCalls : null,
     reasoningText:
         reasoningText.isNotEmpty ? reasoningText.toString() : null,
+    latencyMs: stopwatch.elapsedMilliseconds.toDouble(),
   );
 }

@@ -8,8 +8,10 @@ Genkit Dart plugin for [flutter_gemma](https://pub.dev/packages/flutter_gemma) �
 - Supports text generation (blocking and streaming)
 - Embeddings via `FlutterGemmaEmbedder`
 - Multimodal input (images, audio) — supports `data:` URIs, `file://` paths, and `http(s)://` URLs
-- Function calling / tool use
+- Function calling / tool use with `toolChoice` control (`auto`, `required`, `none`)
+- Parallel tool calls — multiple function calls in a single model response
 - Thinking mode (DeepSeek-style reasoning)
+- Generation latency tracking via `latencyMs` in responses
 - Configurable via `@Schema()`-annotated options
 
 ## Supported Model Architectures
@@ -84,6 +86,8 @@ final response = await ai.generate(
 | `supportImage` | `bool?` | false | Enable multimodal image input |
 | `supportAudio` | `bool?` | false | Enable audio input (Gemma 3n) |
 | `isThinking` | `bool?` | false | Enable thinking mode |
+| `randomSeed` | `int?` | 1 | Random seed for deterministic output |
+| `toolChoice` | `String?` | `'auto'` | Tool calling mode: `'auto'`, `'required'`, `'none'` |
 
 ## Streaming
 

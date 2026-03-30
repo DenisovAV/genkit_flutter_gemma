@@ -11,6 +11,7 @@ ModelResponse convertFinalResponse(
   String fullText, {
   List<gemma.FunctionCallResponse>? functionCalls,
   String? reasoningText,
+  double? latencyMs,
 }) {
   final content = <Part>[];
 
@@ -34,6 +35,7 @@ ModelResponse convertFinalResponse(
       role: Role.model,
       content: content,
     ),
+    latencyMs: latencyMs,
   );
 }
 

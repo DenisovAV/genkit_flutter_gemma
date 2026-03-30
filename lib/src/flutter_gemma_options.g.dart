@@ -6,7 +6,7 @@ part of 'flutter_gemma_options.dart';
 // SchemaGenerator
 // **************************************************************************
 
-class FlutterGemmaModelOptions {
+class FlutterGemmaModelOptions implements $FlutterGemmaModelOptions {
   FlutterGemmaModelOptions({
     this.maxTokens,
     this.temperature,
@@ -19,14 +19,23 @@ class FlutterGemmaModelOptions {
     this.toolChoice,
   });
 
+  @override
   final int? maxTokens;
+  @override
   final double? temperature;
+  @override
   final int? topK;
+  @override
   final double? topP;
+  @override
   final bool? supportImage;
+  @override
   final bool? supportAudio;
+  @override
   final bool? isThinking;
+  @override
   final int? randomSeed;
+  @override
   final String? toolChoice;
 
   static final $schema = _FlutterGemmaModelOptionsSchema();

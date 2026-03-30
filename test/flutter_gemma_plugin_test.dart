@@ -142,6 +142,28 @@ void main() {
       expect(json.containsKey('topK'), isFalse);
     });
 
+    test('fromJson handles randomSeed and toolChoice', () {
+      final options = FlutterGemmaModelOptions.fromJson({
+        'randomSeed': 42,
+        'toolChoice': 'required',
+      });
+
+      expect(options.randomSeed, 42);
+      expect(options.toolChoice, 'required');
+    });
+
+    test('toJson includes randomSeed and toolChoice', () {
+      final options = FlutterGemmaModelOptions(
+        randomSeed: 42,
+        toolChoice: 'none',
+      );
+
+      final json = options.toJson();
+
+      expect(json['randomSeed'], 42);
+      expect(json['toolChoice'], 'none');
+    });
+
     test('schema provides JSON Schema', () {
       final schema = FlutterGemmaModelOptions.$schema.jsonSchema();
 

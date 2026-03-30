@@ -248,6 +248,71 @@ void main() {
       expect(parts.where((p) => p.isToolRequest).length, 2);
     });
 
+    test('blocking: returns reasoning for ThinkingResponse', () async {
+      fakeChat.blockingResponse =
+          const gemma.ThinkingResponse('step by step');
+
+      final model = buildModel();
+      final response = await model(simpleRequest());
+
+      final parts = response.message!.content;
+      expect(parts, hasLength(1));
+      expect(parts.first.isReasoning, isTrue);
+      expect(parts.first.reasoning, 'step by step');
+    });
+
+    test('streaming: accumulates thinking chunks', () async {
+      fakeChat.streamingResponses = [
+        const gemma.ThinkingResponse('step 1. '),
+        const gemma.ThinkingResponse('step 2. '),
+        const gemma.TextResponse('answer'),
+      ];
+
+      final model = buildModel();
+      final chunks = <ModelResponseChunk>[];
+
+      final response = await model(
+        simpleRequest(),
+        onChunk: chunks.add,
+      );
+
+      expect(chunks, hasLength(3));
+      expect(chunks[0].content.first.isReasoning, isTrue);
+      expect(chunks[2].content.first.isText, isTrue);
+
+      final parts = response.message!.content;
+      expect(parts, hasLength(2));
+      expect(parts[0].isReasoning, isTrue);
+      expect(parts[0].reasoning, 'step 1. step 2. ');
+      expect(parts[1].isText, isTrue);
+      expect(parts[1].text, 'answer');
+    });
+
+    test('blocking: response includes latencyMs', () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      final response = await model(simpleRequest());
+
+      expect(response.latencyMs, isNotNull);
+      expect(response.latencyMs, greaterThanOrEqualTo(0));
+    });
+
+    test('streaming: response includes latencyMs', () async {
+      fakeChat.streamingResponses = [
+        const gemma.TextResponse('ok'),
+      ];
+      final model = buildModel();
+
+      final response = await model(
+        simpleRequest(),
+        onChunk: (_) {},
+      );
+
+      expect(response.latencyMs, isNotNull);
+      expect(response.latencyMs, greaterThanOrEqualTo(0));
+    });
+
     test('null request throws GenkitException', () async {
       final model = buildModel();
 

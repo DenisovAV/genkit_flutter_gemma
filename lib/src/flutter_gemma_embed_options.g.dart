@@ -6,9 +6,10 @@ part of 'flutter_gemma_embed_options.dart';
 // SchemaGenerator
 // **************************************************************************
 
-class FlutterGemmaEmbedConfig {
+class FlutterGemmaEmbedConfig implements $FlutterGemmaEmbedConfig {
   FlutterGemmaEmbedConfig({this.preferredBackend});
 
+  @override
   final String? preferredBackend;
 
   static final $schema = _FlutterGemmaEmbedConfigSchema();
@@ -34,7 +35,8 @@ class _FlutterGemmaEmbedConfigSchema {
       'properties': {
         'preferredBackend': {
           'type': 'string',
-          'description': 'Preferred hardware backend hint (cpu, gpu).',
+          'description': 'Preferred hardware backend hint (cpu, gpu, npu).',
+          'enum': ['cpu', 'gpu', 'npu'],
         },
       },
     };

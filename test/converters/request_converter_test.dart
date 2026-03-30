@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_gemma/flutter_gemma.dart' as gemma;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genkit/plugin.dart';
 import 'package:genkit_flutter_gemma/src/converters/request_converter.dart';
@@ -203,6 +204,36 @@ void main() {
 
       expect(result, hasLength(1));
       expect(result[0].type, gemma.MessageType.toolCall);
+    });
+
+    test('handles model message with parallel tool requests', () async {
+      final messages = [
+        Message(role: Role.model, content: [
+          ToolRequestPart(
+            toolRequest: ToolRequest(
+              name: 'get_weather',
+              input: {'location': 'Paris'},
+            ),
+          ),
+          ToolRequestPart(
+            toolRequest: ToolRequest(
+              name: 'get_time',
+              input: {'timezone': 'CET'},
+            ),
+          ),
+        ]),
+      ];
+
+      final result = await convertMessages(messages);
+
+      expect(result, hasLength(1));
+      expect(result[0].type, gemma.MessageType.toolCall);
+      // Verify the JSON contains both calls as an array.
+      final decoded = jsonDecode(result[0].text);
+      expect(decoded, isList);
+      expect(decoded, hasLength(2));
+      expect(decoded[0]['name'], 'get_weather');
+      expect(decoded[1]['name'], 'get_time');
     });
 
     test('handles empty message list', () async {

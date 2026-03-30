@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_gemma/flutter_gemma.dart' as gemma;
 import 'package:genkit/plugin.dart';
 import 'package:http/http.dart' as http;
+
+import 'file_reader.dart';
 
 /// Converts Genkit [ModelRequest] messages to flutter_gemma [gemma.Message] list.
 ///
@@ -160,19 +161,26 @@ Future<Uint8List?> _extractMediaBytes(
             status: StatusCodes.INVALID_ARGUMENT,
           );
         }
-        return _readFileBytes(path);
+        return readFileBytes(path);
       }
 
       // Absolute path (starts with /)
       if (url.startsWith('/')) {
-        return _readFileBytes(url);
+        return readFileBytes(url);
       }
 
       // HTTP/HTTPS URL — download
       if (url.startsWith('http://') || url.startsWith('https://')) {
         final client = httpClient ?? http.Client();
         try {
-          final response = await client.get(Uri.parse(url));
+          final uri = Uri.tryParse(url);
+          if (uri == null) {
+            throw GenkitException(
+              'Malformed media URL: $url',
+              status: StatusCodes.INVALID_ARGUMENT,
+            );
+          }
+          final response = await client.get(uri);
           if (response.statusCode == 200) {
             return response.bodyBytes;
           }
@@ -202,19 +210,24 @@ Future<Uint8List?> _extractMediaBytes(
   return null;
 }
 
-/// Extracts a tool request (function call) as JSON string from content parts.
+/// Extracts tool requests (function calls) as JSON string from content parts.
+///
+/// If a single tool call is found, returns a JSON object: `{"name": ..., "parameters": ...}`.
+/// If multiple tool calls are found (parallel calls), returns a JSON array of objects.
 String? _extractToolRequest(List<Part> parts) {
+  final calls = <Map<String, dynamic>>[];
   for (final part in parts) {
     if (part.isToolRequest) {
       final toolReq = part.toolRequest!;
-      final call = <String, dynamic>{
+      calls.add({
         'name': toolReq.name,
         'parameters': toolReq.input,
-      };
-      return jsonEncode(call);
+      });
     }
   }
-  return null;
+  if (calls.isEmpty) return null;
+  if (calls.length == 1) return jsonEncode(calls.first);
+  return jsonEncode(calls);
 }
 
 /// Extracts tool response data from content parts.
@@ -232,21 +245,6 @@ _ToolResponseData? _extractToolResponse(List<Part> parts) {
     }
   }
   return null;
-}
-
-/// Reads file bytes with error handling and context.
-Future<Uint8List> _readFileBytes(String path) async {
-  try {
-    return await File(path).readAsBytes();
-  } on FileSystemException catch (e) {
-    final status = e.osError?.errorCode == 2 // ENOENT
-        ? StatusCodes.NOT_FOUND
-        : StatusCodes.INTERNAL;
-    throw GenkitException(
-      'Failed to read media file $path: $e',
-      status: status,
-    );
-  }
 }
 
 class _ToolResponseData {

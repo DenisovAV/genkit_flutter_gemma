@@ -57,6 +57,16 @@ void main() {
       expect(result.finishReason, FinishReason.stop);
     });
 
+    test('propagates latencyMs', () {
+      final result = convertFinalResponse('text', latencyMs: 42.0);
+      expect(result.latencyMs, 42.0);
+    });
+
+    test('latencyMs is null when not provided', () {
+      final result = convertFinalResponse('text');
+      expect(result.latencyMs, isNull);
+    });
+
     test('includes reasoning text as ReasoningPart', () {
       final result = convertFinalResponse(
         'answer',

@@ -9,7 +9,7 @@ import 'package:genkit/plugin.dart';
 /// - Reasoning → prepended [ReasoningPart] before text/tool content
 ModelResponse convertFinalResponse(
   String fullText, {
-  gemma.FunctionCallResponse? functionCall,
+  List<gemma.FunctionCallResponse>? functionCalls,
   String? reasoningText,
 }) {
   final content = <Part>[];
@@ -18,13 +18,12 @@ ModelResponse convertFinalResponse(
     content.add(ReasoningPart(reasoning: reasoningText));
   }
 
-  if (functionCall != null) {
-    content.add(ToolRequestPart(
-      toolRequest: ToolRequest(
-        name: functionCall.name,
-        input: functionCall.args,
-      ),
-    ));
+  if (functionCalls != null && functionCalls.isNotEmpty) {
+    for (final call in functionCalls) {
+      content.add(ToolRequestPart(
+        toolRequest: ToolRequest(name: call.name, input: call.args),
+      ));
+    }
   } else if (fullText.isNotEmpty) {
     content.add(TextPart(text: fullText));
   }
@@ -51,6 +50,12 @@ ModelResponseChunk convertStreamChunk(gemma.ModelResponse chunk) {
       content.add(ToolRequestPart(
         toolRequest: ToolRequest(name: name, input: args),
       ));
+    case gemma.ParallelFunctionCallResponse(:final calls):
+      for (final call in calls) {
+        content.add(ToolRequestPart(
+          toolRequest: ToolRequest(name: call.name, input: call.args),
+        ));
+      }
     case gemma.ThinkingResponse(:final content):
       if (content.isNotEmpty) {
         // Destructured 'content' shadows outer list; early return avoids conflict.

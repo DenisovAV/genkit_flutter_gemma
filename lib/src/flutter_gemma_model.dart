@@ -108,6 +108,11 @@ Future<ModelResponse> _executeGeneration({
   final supportImage = config?.supportImage ?? false;
   final supportAudio = config?.supportAudio ?? false;
   final isThinking = config?.isThinking ?? false;
+  final gemmaToolChoice = switch (config?.toolChoice) {
+    'required' => gemma.ToolChoice.required,
+    'none' => gemma.ToolChoice.none,
+    _ => gemma.ToolChoice.auto,
+  };
 
   // Get or create InferenceModel (cached if params match).
   final needsNewModel = cachedModel == null ||
@@ -143,6 +148,7 @@ Future<ModelResponse> _executeGeneration({
     supportsFunctionCalls: supportsFunctionCalls,
     isThinking: isThinking,
     modelType: modelType,
+    toolChoice: gemmaToolChoice,
   );
 
   // Convert and add messages.
@@ -169,8 +175,10 @@ Future<ModelResponse> _generateBlocking(gemma.InferenceChat chat) async {
     case gemma.FunctionCallResponse(:final name, :final args):
       return convertFinalResponse(
         '',
-        functionCall: gemma.FunctionCallResponse(name: name, args: args),
+        functionCalls: [gemma.FunctionCallResponse(name: name, args: args)],
       );
+    case gemma.ParallelFunctionCallResponse(:final calls):
+      return convertFinalResponse('', functionCalls: calls);
     case gemma.ThinkingResponse(:final content):
       return convertFinalResponse('', reasoningText: content);
   }
@@ -183,7 +191,7 @@ Future<ModelResponse> _generateStreaming(
 ) async {
   final fullText = StringBuffer();
   final reasoningText = StringBuffer();
-  gemma.FunctionCallResponse? lastFunctionCall;
+  final functionCalls = <gemma.FunctionCallResponse>[];
 
   await for (final chunk in chat.generateChatResponseAsync()) {
     sendChunk(convertStreamChunk(chunk));
@@ -192,7 +200,9 @@ Future<ModelResponse> _generateStreaming(
       case gemma.TextResponse(:final token):
         fullText.write(token);
       case gemma.FunctionCallResponse(:final name, :final args):
-        lastFunctionCall = gemma.FunctionCallResponse(name: name, args: args);
+        functionCalls.add(gemma.FunctionCallResponse(name: name, args: args));
+      case gemma.ParallelFunctionCallResponse(:final calls):
+        functionCalls.addAll(calls);
       case gemma.ThinkingResponse(:final content):
         reasoningText.write(content);
     }
@@ -200,7 +210,7 @@ Future<ModelResponse> _generateStreaming(
 
   return convertFinalResponse(
     fullText.toString(),
-    functionCall: lastFunctionCall,
+    functionCalls: functionCalls.isNotEmpty ? functionCalls : null,
     reasoningText:
         reasoningText.isNotEmpty ? reasoningText.toString() : null,
   );

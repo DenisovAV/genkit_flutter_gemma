@@ -16,6 +16,7 @@ class FlutterGemmaModelOptions {
     this.supportAudio,
     this.isThinking,
     this.randomSeed,
+    this.toolChoice,
   });
 
   final int? maxTokens;
@@ -26,6 +27,7 @@ class FlutterGemmaModelOptions {
   final bool? supportAudio;
   final bool? isThinking;
   final int? randomSeed;
+  final String? toolChoice;
 
   static final $schema = _FlutterGemmaModelOptionsSchema();
 
@@ -39,6 +41,7 @@ class FlutterGemmaModelOptions {
       supportAudio: json['supportAudio'] as bool?,
       isThinking: json['isThinking'] as bool?,
       randomSeed: json['randomSeed'] as int?,
+      toolChoice: json['toolChoice'] as String?,
     );
   }
 
@@ -52,6 +55,7 @@ class FlutterGemmaModelOptions {
       if (supportAudio != null) 'supportAudio': supportAudio,
       if (isThinking != null) 'isThinking': isThinking,
       if (randomSeed != null) 'randomSeed': randomSeed,
+      if (toolChoice != null) 'toolChoice': toolChoice,
     };
   }
 }
@@ -96,6 +100,12 @@ class _FlutterGemmaModelOptionsSchema {
         'randomSeed': {
           'type': 'integer',
           'description': 'Random seed for deterministic output. Defaults to 1.',
+        },
+        'toolChoice': {
+          'type': 'string',
+          'description':
+              "Tool choice mode: 'auto', 'required', or 'none'. Defaults to 'auto'.",
+          'enum': ['auto', 'required', 'none'],
         },
       },
     };

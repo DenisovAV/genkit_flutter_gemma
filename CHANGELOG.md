@@ -1,3 +1,10 @@
+## 0.1.1
+
+- Bump flutter_gemma dependency to ^0.12.8
+- Add `toolChoice` config option ('auto', 'required', 'none') passed to model chat session
+- Support `ParallelFunctionCallResponse` — multiple tool calls in a single model response
+- Fix `FakeEmbeddingModel` compatibility with flutter_gemma 0.12.8 `taskType` parameter
+
 ## 0.1.0
 
 - Initial release

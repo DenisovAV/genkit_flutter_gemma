@@ -31,4 +31,7 @@ abstract class $FlutterGemmaModelOptions {
 
   /// Random seed for deterministic output. Defaults to 1.
   int? get randomSeed;
+
+  /// Tool choice mode: 'auto', 'required', or 'none'. Defaults to 'auto'.
+  String? get toolChoice;
 }

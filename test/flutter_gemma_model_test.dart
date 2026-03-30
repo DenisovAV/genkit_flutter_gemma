@@ -168,6 +168,86 @@ void main() {
       expect(fakeChat.receivedMessages[2].text, 'How are you?');
     });
 
+    test('passes toolChoice required to createChat', () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(ModelRequest(
+        messages: [
+          Message(role: Role.user, content: [TextPart(text: 'Hi')]),
+        ],
+        config: {'toolChoice': 'required'},
+      ));
+
+      expect(fakeModel.lastToolChoice, gemma.ToolChoice.required);
+    });
+
+    test('passes toolChoice none to createChat', () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(ModelRequest(
+        messages: [
+          Message(role: Role.user, content: [TextPart(text: 'Hi')]),
+        ],
+        config: {'toolChoice': 'none'},
+      ));
+
+      expect(fakeModel.lastToolChoice, gemma.ToolChoice.none);
+    });
+
+    test('defaults toolChoice to auto', () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(simpleRequest());
+
+      expect(fakeModel.lastToolChoice, gemma.ToolChoice.auto);
+    });
+
+    test('blocking: returns parallel function call response', () async {
+      fakeChat.blockingResponse = const gemma.ParallelFunctionCallResponse(
+        calls: [
+          gemma.FunctionCallResponse(name: 'get_weather', args: {'city': 'Moscow'}),
+          gemma.FunctionCallResponse(name: 'get_time', args: {'tz': 'MSK'}),
+        ],
+      );
+
+      final model = buildModel();
+      final response = await model(simpleRequest());
+
+      final parts = response.message!.content;
+      expect(parts, hasLength(2));
+      expect(parts[0].isToolRequest, isTrue);
+      expect(parts[0].toolRequest!.name, 'get_weather');
+      expect(parts[1].isToolRequest, isTrue);
+      expect(parts[1].toolRequest!.name, 'get_time');
+    });
+
+    test('streaming: accumulates parallel function calls', () async {
+      fakeChat.streamingResponses = [
+        const gemma.TextResponse('thinking... '),
+        const gemma.ParallelFunctionCallResponse(
+          calls: [
+            gemma.FunctionCallResponse(name: 'a', args: {'x': 1}),
+            gemma.FunctionCallResponse(name: 'b', args: {'y': 2}),
+          ],
+        ),
+      ];
+
+      final model = buildModel();
+      final chunks = <ModelResponseChunk>[];
+
+      final response = await model(
+        simpleRequest(),
+        onChunk: chunks.add,
+      );
+
+      expect(chunks, hasLength(2));
+      final parts = response.message!.content;
+      expect(parts.where((p) => p.isToolRequest).length, 2);
+    });
+
     test('null request throws GenkitException', () async {
       final model = buildModel();
 

@@ -1,3 +1,13 @@
+## 0.2.0
+
+- **Breaking**: Upgrade flutter_gemma dependency to ^0.13.0
+- **Breaking**: System messages are now passed natively via `createChat(systemInstruction:)` instead of being prepended to the first user message
+- Add `systemInstruction` config option for explicit system-level instructions
+- Support `ModelFileType.litertlm` for LiteRT-LM models (Gemma 4)
+- Advertise `systemRole: true` in Genkit model metadata
+- Throw on system-only requests (at least one user/model message required)
+- Throw on system messages with non-text content parts
+
 ## 0.1.1
 
 - Bump flutter_gemma dependency to ^0.12.8

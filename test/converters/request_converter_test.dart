@@ -34,7 +34,8 @@ void main() {
       expect(result[0].isUser, isFalse);
     });
 
-    test('prepends system message to first user message', () async {
+    test('skips system messages (handled via extractSystemInstruction)',
+        () async {
       final messages = [
         Message(
           role: Role.system,
@@ -46,11 +47,11 @@ void main() {
       final result = await convertMessages(messages);
 
       expect(result, hasLength(1));
-      expect(result[0].text, 'You are helpful.\n\nHello');
+      expect(result[0].text, 'Hello');
       expect(result[0].isUser, isTrue);
     });
 
-    test('handles multiple system messages before user', () async {
+    test('skips multiple system messages', () async {
       final messages = [
         Message(role: Role.system, content: [TextPart(text: 'Rule 1')]),
         Message(role: Role.system, content: [TextPart(text: 'Rule 2')]),
@@ -60,11 +61,11 @@ void main() {
       final result = await convertMessages(messages);
 
       expect(result, hasLength(1));
-      expect(result[0].text, 'Rule 1\nRule 2\n\nHello');
+      expect(result[0].text, 'Hello');
       expect(result[0].isUser, isTrue);
     });
 
-    test('handles system-only messages (no user follows)', () async {
+    test('returns empty list for system-only messages', () async {
       final messages = [
         Message(
           role: Role.system,
@@ -74,9 +75,7 @@ void main() {
 
       final result = await convertMessages(messages);
 
-      expect(result, hasLength(1));
-      expect(result[0].text, 'System only');
-      expect(result[0].isUser, isTrue);
+      expect(result, isEmpty);
     });
 
     test('converts multi-turn conversation', () async {
@@ -253,6 +252,60 @@ void main() {
 
       expect(result, hasLength(1));
       expect(result[0].text, 'Part 1\nPart 2');
+    });
+  });
+
+  group('extractSystemInstruction', () {
+    test('extracts single system message', () {
+      final messages = [
+        Message(
+          role: Role.system,
+          content: [TextPart(text: 'You are helpful.')],
+        ),
+        Message(role: Role.user, content: [TextPart(text: 'Hello')]),
+      ];
+
+      expect(extractSystemInstruction(messages), 'You are helpful.');
+    });
+
+    test('concatenates multiple system messages', () {
+      final messages = [
+        Message(role: Role.system, content: [TextPart(text: 'Rule 1')]),
+        Message(role: Role.system, content: [TextPart(text: 'Rule 2')]),
+        Message(role: Role.user, content: [TextPart(text: 'Hello')]),
+      ];
+
+      expect(extractSystemInstruction(messages), 'Rule 1\nRule 2');
+    });
+
+    test('returns null when no system messages', () {
+      final messages = [
+        Message(role: Role.user, content: [TextPart(text: 'Hello')]),
+      ];
+
+      expect(extractSystemInstruction(messages), isNull);
+    });
+
+    test('returns null for empty messages', () {
+      expect(extractSystemInstruction([]), isNull);
+    });
+
+    test('throws on system message with non-text parts only', () {
+      final messages = [
+        Message(role: Role.system, content: [
+          MediaPart(
+            media: Media(
+              url: 'data:image/png;base64,iVBOR',
+              contentType: 'image/png',
+            ),
+          ),
+        ]),
+      ];
+
+      expect(
+        () => extractSystemInstruction(messages),
+        throwsA(isA<GenkitException>()),
+      );
     });
   });
 }

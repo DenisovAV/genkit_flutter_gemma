@@ -17,6 +17,7 @@ class FlutterGemmaModelOptions implements $FlutterGemmaModelOptions {
     this.isThinking,
     this.randomSeed,
     this.toolChoice,
+    this.systemInstruction,
   });
 
   @override
@@ -37,6 +38,8 @@ class FlutterGemmaModelOptions implements $FlutterGemmaModelOptions {
   final int? randomSeed;
   @override
   final String? toolChoice;
+  @override
+  final String? systemInstruction;
 
   static final $schema = _FlutterGemmaModelOptionsSchema();
 
@@ -51,6 +54,7 @@ class FlutterGemmaModelOptions implements $FlutterGemmaModelOptions {
       isThinking: json['isThinking'] as bool?,
       randomSeed: json['randomSeed'] as int?,
       toolChoice: json['toolChoice'] as String?,
+      systemInstruction: json['systemInstruction'] as String?,
     );
   }
 
@@ -65,6 +69,7 @@ class FlutterGemmaModelOptions implements $FlutterGemmaModelOptions {
       if (isThinking != null) 'isThinking': isThinking,
       if (randomSeed != null) 'randomSeed': randomSeed,
       if (toolChoice != null) 'toolChoice': toolChoice,
+      if (systemInstruction != null) 'systemInstruction': systemInstruction,
     };
   }
 }
@@ -115,6 +120,13 @@ class _FlutterGemmaModelOptionsSchema {
           'description':
               "Tool choice mode: 'auto', 'required', or 'none'. Defaults to 'auto'.",
           'enum': ['auto', 'required', 'none'],
+        },
+        'systemInstruction': {
+          'type': 'string',
+          'description':
+              'System-level instruction passed natively to flutter_gemma. '
+              'If set, takes priority over system-role messages in the request. '
+              'If not set, system messages from the request are used.',
         },
       },
     };

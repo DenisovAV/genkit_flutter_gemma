@@ -113,6 +113,8 @@ Future<ModelResponse> _executeGeneration({
     'none' => gemma.ToolChoice.none,
     _ => gemma.ToolChoice.auto,
   };
+  final systemInstruction = config?.systemInstruction ??
+      extractSystemInstruction(request.messages);
 
   // Get or create InferenceModel (cached if params match).
   final needsNewModel = cachedModel == null ||
@@ -149,10 +151,18 @@ Future<ModelResponse> _executeGeneration({
     isThinking: isThinking,
     modelType: modelType,
     toolChoice: gemmaToolChoice,
+    systemInstruction: systemInstruction,
   );
 
   // Convert and add messages.
   final gemmaMessages = await convertMessages(request.messages);
+  if (gemmaMessages.isEmpty) {
+    throw GenkitException(
+      'No convertible messages in request. System messages alone are not '
+      'sufficient — at least one user or model message is required.',
+      status: StatusCodes.INVALID_ARGUMENT,
+    );
+  }
   for (final msg in gemmaMessages) {
     await chat.addQueryChunk(msg);
   }

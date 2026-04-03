@@ -321,5 +321,92 @@ void main() {
         throwsA(isA<GenkitException>()),
       );
     });
+
+    test('passes systemInstruction from config to createChat', () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(ModelRequest(
+        messages: [
+          Message(role: Role.user, content: [TextPart(text: 'Hi')]),
+        ],
+        config: {'systemInstruction': 'Be concise.'},
+      ));
+
+      expect(fakeModel.lastSystemInstruction, 'Be concise.');
+    });
+
+    test('extracts systemInstruction from system messages', () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(ModelRequest(
+        messages: [
+          Message(
+            role: Role.system,
+            content: [TextPart(text: 'You are helpful.')],
+          ),
+          Message(role: Role.user, content: [TextPart(text: 'Hi')]),
+        ],
+      ));
+
+      expect(fakeModel.lastSystemInstruction, 'You are helpful.');
+    });
+
+    test('config systemInstruction takes priority over system messages',
+        () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(ModelRequest(
+        messages: [
+          Message(
+            role: Role.system,
+            content: [TextPart(text: 'From message.')],
+          ),
+          Message(role: Role.user, content: [TextPart(text: 'Hi')]),
+        ],
+        config: {'systemInstruction': 'From config.'},
+      ));
+
+      expect(fakeModel.lastSystemInstruction, 'From config.');
+    });
+
+    test('system messages are not prepended to user messages', () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(ModelRequest(
+        messages: [
+          Message(
+            role: Role.system,
+            content: [TextPart(text: 'Be helpful.')],
+          ),
+          Message(role: Role.user, content: [TextPart(text: 'Hello')]),
+        ],
+      ));
+
+      // System message should be passed via createChat, not prepended to user message.
+      expect(fakeChat.receivedMessages, hasLength(1));
+      expect(fakeChat.receivedMessages[0].text, 'Hello');
+    });
+
+    test('throws on system-only messages (no user or model messages)',
+        () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await expectLater(
+        model(ModelRequest(
+          messages: [
+            Message(
+              role: Role.system,
+              content: [TextPart(text: 'Be helpful.')],
+            ),
+          ],
+        )),
+        throwsA(isA<GenkitException>()),
+      );
+    });
   });
 }

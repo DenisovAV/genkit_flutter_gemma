@@ -32,6 +32,10 @@ void main() {
       expect(metadata[0].name, 'flutter-gemma/gemma-3-nano');
       expect(metadata[0].actionType, 'model');
       expect(metadata[1].name, 'flutter-gemma/deepseek-r1');
+
+      final supports =
+          (metadata[0].metadata['model'] as Map)['supports'] as Map;
+      expect(supports['systemRole'], isTrue);
     });
 
     test('resolve() returns null for non-model action types', () {
@@ -162,6 +166,24 @@ void main() {
 
       expect(json['randomSeed'], 42);
       expect(json['toolChoice'], 'none');
+    });
+
+    test('fromJson parses systemInstruction', () {
+      final options = FlutterGemmaModelOptions.fromJson({
+        'systemInstruction': 'Be concise.',
+      });
+
+      expect(options.systemInstruction, 'Be concise.');
+    });
+
+    test('toJson includes systemInstruction when set, omits when null', () {
+      final withInstruction = FlutterGemmaModelOptions(
+        systemInstruction: 'Be helpful.',
+      );
+      final without = FlutterGemmaModelOptions();
+
+      expect(withInstruction.toJson()['systemInstruction'], 'Be helpful.');
+      expect(without.toJson().containsKey('systemInstruction'), isFalse);
     });
 
     test('schema provides JSON Schema', () {

@@ -92,6 +92,7 @@ final response = await ai.generate(
 | `isThinking` | `bool?` | false | Enable thinking mode |
 | `randomSeed` | `int?` | 1 | Random seed for deterministic output |
 | `toolChoice` | `String?` | `'auto'` | Tool calling mode: `'auto'`, `'required'`, `'none'` |
+| `systemInstruction` | `String?` | null | System-level instruction (overrides system-role messages) |
 
 ## Streaming
 
@@ -143,4 +144,4 @@ for (final embedding in embeddings) {
 ## Known Limitations
 
 - **Model installation**: The plugin does NOT manage model installation. The host app must install models via `FlutterGemma.installModel()` and embedders via `FlutterGemma.installEmbedder()` before using the plugin.
-- **System role**: flutter_gemma doesn't support a native system role. System messages are prepended to the first user message.
+- **System role**: System messages are passed natively via `createChat(systemInstruction:)` (requires flutter_gemma ^0.13.0). Only text content is supported in system messages.

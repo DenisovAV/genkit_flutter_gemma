@@ -60,6 +60,7 @@ class FakeInferenceModel extends gemma.InferenceModel {
   gemma.InferenceChat? get chat => null;
 
   gemma.ToolChoice? lastToolChoice;
+  String? lastSystemInstruction;
 
   @override
   Future<gemma.InferenceChat> createChat({
@@ -76,9 +77,11 @@ class FakeInferenceModel extends gemma.InferenceModel {
     bool isThinking = false,
     gemma.ModelType? modelType,
     gemma.ToolChoice toolChoice = gemma.ToolChoice.auto,
+    String? systemInstruction,
   }) async {
     createChatCallCount++;
     lastToolChoice = toolChoice;
+    lastSystemInstruction = systemInstruction;
     return chatToReturn ?? FakeInferenceChat();
   }
 
@@ -91,6 +94,7 @@ class FakeInferenceModel extends gemma.InferenceModel {
     String? loraPath,
     bool? enableVisionModality,
     bool? enableAudioModality,
+    String? systemInstruction,
   }) async {
     throw UnimplementedError('FakeInferenceModel.createSession');
   }
@@ -144,6 +148,9 @@ class FakeInferenceChat extends gemma.InferenceChat {
       yield response;
     }
   }
+
+  @override
+  Future<void> close() async {}
 }
 
 /// Fake embedding model that returns preconfigured embeddings.

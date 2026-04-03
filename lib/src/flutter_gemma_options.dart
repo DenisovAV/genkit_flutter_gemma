@@ -34,4 +34,8 @@ abstract class $FlutterGemmaModelOptions {
 
   /// Tool choice mode: 'auto', 'required', or 'none'. Defaults to 'auto'.
   String? get toolChoice;
+
+  /// System-level instruction passed natively to flutter_gemma's createChat().
+  /// If not set, system messages from the Genkit request are used instead.
+  String? get systemInstruction;
 }

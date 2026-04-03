@@ -19,7 +19,7 @@ dependencies:
   flutter:
     sdk: flutter
   genkit: ^0.12.1
-  flutter_gemma: ^0.12.8
+  flutter_gemma: ^0.13.0
   http: ^1.2.0
   schemantic: ^0.1.1
 

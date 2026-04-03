@@ -113,6 +113,8 @@ Future<ModelResponse> _executeGeneration({
     'none' => gemma.ToolChoice.none,
     _ => gemma.ToolChoice.auto,
   };
+  final systemInstruction = config?.systemInstruction ??
+      extractSystemInstruction(request.messages);
 
   // Get or create InferenceModel (cached if params match).
   final needsNewModel = cachedModel == null ||
@@ -149,6 +151,7 @@ Future<ModelResponse> _executeGeneration({
     isThinking: isThinking,
     modelType: modelType,
     toolChoice: gemmaToolChoice,
+    systemInstruction: systemInstruction,
   );
 
   // Convert and add messages.

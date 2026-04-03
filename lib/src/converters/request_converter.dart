@@ -7,10 +7,28 @@ import 'package:http/http.dart' as http;
 
 import 'file_reader.dart';
 
+/// Extracts and concatenates all system messages into a single string.
+///
+/// Returns `null` if no system messages are present.
+/// Used to pass system instructions natively via `createChat(systemInstruction:)`.
+String? extractSystemInstruction(List<Message> messages) {
+  final buffer = StringBuffer();
+  for (final message in messages) {
+    if (message.role == Role.system) {
+      final text = _extractText(message.content);
+      if (text.isNotEmpty) {
+        if (buffer.isNotEmpty) buffer.write('\n');
+        buffer.write(text);
+      }
+    }
+  }
+  return buffer.isEmpty ? null : buffer.toString();
+}
+
 /// Converts Genkit [ModelRequest] messages to flutter_gemma [gemma.Message] list.
 ///
 /// Key mapping rules:
-/// - `Role.system` → Prepended to first user message text (flutter_gemma has no system role)
+/// - `Role.system` → Skipped (handled via [extractSystemInstruction] + `createChat(systemInstruction:)`)
 /// - `Role.user` → `Message(text: ..., isUser: true, imageBytes: ..., audioBytes: ...)`
 /// - `Role.model` → `Message(text: ..., isUser: false)`
 /// - `Role.tool` → `Message.toolResponse(toolName: ..., response: ...)`
@@ -22,24 +40,15 @@ Future<List<gemma.Message>> convertMessages(
   http.Client? httpClient,
 }) async {
   final result = <gemma.Message>[];
-  String? pendingSystemText;
 
   for (final message in messages) {
     final role = message.role;
 
     if (role == Role.system) {
-      final text = _extractText(message.content);
-      if (text.isNotEmpty) {
-        pendingSystemText = (pendingSystemText != null)
-            ? '$pendingSystemText\n$text'
-            : text;
-      }
+      // System messages are handled natively via createChat(systemInstruction:).
+      continue;
     } else if (role == Role.user) {
-      var text = _extractText(message.content);
-      if (pendingSystemText != null) {
-        text = '$pendingSystemText\n\n$text';
-        pendingSystemText = null;
-      }
+      final text = _extractText(message.content);
       final imageBytes =
           await _extractMediaBytes(message.content, 'image', httpClient);
       final audioBytes =
@@ -81,11 +90,6 @@ Future<List<gemma.Message>> convertMessages(
         response: toolResponse.response,
       ));
     }
-  }
-
-  // If system text was never consumed (no user message followed), add as user.
-  if (pendingSystemText != null) {
-    result.add(gemma.Message(text: pendingSystemText, isUser: true));
   }
 
   return result;

@@ -26,7 +26,7 @@ class FlutterGemmaModelConfig {
   /// The flutter_gemma model architecture type.
   final gemma.ModelType modelType;
 
-  /// The model file format (.task or .binary).
+  /// The model file format (.task, .binary, or .litertlm).
   final gemma.ModelFileType fileType;
 }
 
@@ -124,7 +124,7 @@ class GenkitFlutterGemmaPlugin extends GenkitPlugin {
               'multiturn': true,
               'media': true,
               'tools': true,
-              'systemRole': false,
+              'systemRole': true,
               'output': ['text'],
             },
           },

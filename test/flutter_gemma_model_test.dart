@@ -390,5 +390,23 @@ void main() {
       expect(fakeChat.receivedMessages, hasLength(1));
       expect(fakeChat.receivedMessages[0].text, 'Hello');
     });
+
+    test('throws on system-only messages (no user or model messages)',
+        () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await expectLater(
+        model(ModelRequest(
+          messages: [
+            Message(
+              role: Role.system,
+              content: [TextPart(text: 'Be helpful.')],
+            ),
+          ],
+        )),
+        throwsA(isA<GenkitException>()),
+      );
+    });
   });
 }

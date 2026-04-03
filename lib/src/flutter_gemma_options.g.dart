@@ -125,7 +125,8 @@ class _FlutterGemmaModelOptionsSchema {
           'type': 'string',
           'description':
               'System-level instruction passed natively to flutter_gemma. '
-              'If not set, system messages from the Genkit request are used.',
+              'If set, takes priority over system-role messages in the request. '
+              'If not set, system messages from the request are used.',
         },
       },
     };

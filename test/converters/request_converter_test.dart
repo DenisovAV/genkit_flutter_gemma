@@ -289,6 +289,23 @@ void main() {
     test('returns null for empty messages', () {
       expect(extractSystemInstruction([]), isNull);
     });
-  });
 
+    test('throws on system message with non-text parts only', () {
+      final messages = [
+        Message(role: Role.system, content: [
+          MediaPart(
+            media: Media(
+              url: 'data:image/png;base64,iVBOR',
+              contentType: 'image/png',
+            ),
+          ),
+        ]),
+      ];
+
+      expect(
+        () => extractSystemInstruction(messages),
+        throwsA(isA<GenkitException>()),
+      );
+    });
+  });
 }

@@ -9,7 +9,11 @@ import 'file_reader.dart';
 
 /// Extracts and concatenates all system messages into a single string.
 ///
-/// Returns `null` if no system messages are present.
+/// Returns `null` if no system messages are present or all contain empty text.
+/// Throws if a system message has content parts but no extractable text
+/// (e.g. only media parts), since flutter_gemma only supports text system
+/// instructions.
+///
 /// Used to pass system instructions natively via `createChat(systemInstruction:)`.
 String? extractSystemInstruction(List<Message> messages) {
   final buffer = StringBuffer();
@@ -19,6 +23,12 @@ String? extractSystemInstruction(List<Message> messages) {
       if (text.isNotEmpty) {
         if (buffer.isNotEmpty) buffer.write('\n');
         buffer.write(text);
+      } else if (message.content.isNotEmpty) {
+        throw GenkitException(
+          'System message contains non-text parts which are not supported '
+          'for system instructions. Only text content is used.',
+          status: StatusCodes.INVALID_ARGUMENT,
+        );
       }
     }
   }

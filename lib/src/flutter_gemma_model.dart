@@ -156,6 +156,13 @@ Future<ModelResponse> _executeGeneration({
 
   // Convert and add messages.
   final gemmaMessages = await convertMessages(request.messages);
+  if (gemmaMessages.isEmpty) {
+    throw GenkitException(
+      'No convertible messages in request. System messages alone are not '
+      'sufficient — at least one user or model message is required.',
+      status: StatusCodes.INVALID_ARGUMENT,
+    );
+  }
   for (final msg in gemmaMessages) {
     await chat.addQueryChunk(msg);
   }

@@ -36,6 +36,7 @@ abstract class $FlutterGemmaModelOptions {
   String? get toolChoice;
 
   /// System-level instruction passed natively to flutter_gemma's createChat().
-  /// If not set, system messages from the Genkit request are used instead.
+  /// If set, takes priority over any system-role messages in the Genkit request.
+  /// If not set, system messages from the request are extracted and used instead.
   String? get systemInstruction;
 }

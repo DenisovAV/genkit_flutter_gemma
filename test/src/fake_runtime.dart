@@ -95,6 +95,7 @@ class FakeInferenceModel extends gemma.InferenceModel {
     bool? enableVisionModality,
     bool? enableAudioModality,
     String? systemInstruction,
+    bool enableThinking = false,
   }) async {
     throw UnimplementedError('FakeInferenceModel.createSession');
   }

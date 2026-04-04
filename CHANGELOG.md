@@ -1,3 +1,7 @@
+## 0.2.1
+
+- Bump flutter_gemma dependency to ^0.13.1 (LiteRT-LM 0.10.0, Gemma 4 thinking mode fix)
+
 ## 0.2.0
 
 - **Breaking**: Upgrade flutter_gemma dependency to ^0.13.0

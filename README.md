@@ -14,7 +14,7 @@ Genkit Dart plugin for [flutter_gemma](https://pub.dev/packages/flutter_gemma) â
 - Multimodal input (images, audio) â€” supports `data:` URIs, `file://` paths, and `http(s)://` URLs
 - Function calling / tool use with `toolChoice` control (`auto`, `required`, `none`)
 - Parallel tool calls â€” multiple function calls in a single model response
-- Thinking mode (DeepSeek-style reasoning)
+- Thinking mode (Gemma 4, DeepSeek)
 - Generation latency tracking via `latencyMs` in responses
 - Configurable via `@Schema()`-annotated options
 
@@ -22,10 +22,11 @@ Genkit Dart plugin for [flutter_gemma](https://pub.dev/packages/flutter_gemma) â
 
 | Architecture | ModelType | Notes |
 |---|---|---|
-| Gemma IT | `ModelType.gemmaIt` | Default, multimodal support |
+| Gemma 3 / Gemma 4 IT | `ModelType.gemmaIt` | Default; multimodal (image, audio); thinking mode for Gemma 4 |
 | DeepSeek | `ModelType.deepSeek` | Thinking mode |
-| Qwen | `ModelType.qwen` | |
+| Qwen / Qwen3 | `ModelType.qwen` / `ModelType.qwen3` | Qwen3 supports thinking mode |
 | Llama | `ModelType.llama` | |
+| Phi | `ModelType.phi` | Phi-4 |
 | FunctionGemma | `ModelType.functionGemma` | Specialized function calling |
 
 ## Quick Start
@@ -89,10 +90,11 @@ final response = await ai.generate(
 | `topP` | `double?` | null | Top-P (nucleus) sampling |
 | `supportImage` | `bool?` | false | Enable multimodal image input |
 | `supportAudio` | `bool?` | false | Enable audio input (Gemma 3n) |
-| `isThinking` | `bool?` | false | Enable thinking mode |
+| `isThinking` | `bool?` | false | Enable thinking mode (Gemma 4, DeepSeek) |
 | `randomSeed` | `int?` | 1 | Random seed for deterministic output |
 | `toolChoice` | `String?` | `'auto'` | Tool calling mode: `'auto'`, `'required'`, `'none'` |
 | `systemInstruction` | `String?` | null | System-level instruction (overrides system-role messages) |
+| `maxFunctionBufferLength` | `int?` | null | Max token buffer for streaming tool-call arguments (increase for large payloads) |
 
 ## Streaming
 
@@ -145,3 +147,4 @@ for (final embedding in embeddings) {
 
 - **Model installation**: The plugin does NOT manage model installation. The host app must install models via `FlutterGemma.installModel()` and embedders via `FlutterGemma.installEmbedder()` before using the plugin.
 - **System role**: System messages are passed natively via `createChat(systemInstruction:)` (requires flutter_gemma ^0.13.0). Only text content is supported in system messages.
+- **Thinking mode**: Requires `.litertlm` model format. Supported on Android, iOS, and Desktop. Not supported on Web.

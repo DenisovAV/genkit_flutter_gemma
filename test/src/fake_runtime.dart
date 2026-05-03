@@ -61,6 +61,7 @@ class FakeInferenceModel extends gemma.InferenceModel {
 
   gemma.ToolChoice? lastToolChoice;
   String? lastSystemInstruction;
+  int? lastMaxFunctionBufferLength;
 
   @override
   Future<gemma.InferenceChat> createChat({
@@ -78,10 +79,12 @@ class FakeInferenceModel extends gemma.InferenceModel {
     gemma.ModelType? modelType,
     gemma.ToolChoice toolChoice = gemma.ToolChoice.auto,
     String? systemInstruction,
+    int? maxFunctionBufferLength,
   }) async {
     createChatCallCount++;
     lastToolChoice = toolChoice;
     lastSystemInstruction = systemInstruction;
+    lastMaxFunctionBufferLength = maxFunctionBufferLength;
     return chatToReturn ?? FakeInferenceChat();
   }
 
@@ -96,6 +99,7 @@ class FakeInferenceModel extends gemma.InferenceModel {
     bool? enableAudioModality,
     String? systemInstruction,
     bool enableThinking = false,
+    List<gemma.Tool> tools = const [],
   }) async {
     throw UnimplementedError('FakeInferenceModel.createSession');
   }

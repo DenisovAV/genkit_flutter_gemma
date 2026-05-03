@@ -6,129 +6,278 @@ part of 'flutter_gemma_options.dart';
 // SchemaGenerator
 // **************************************************************************
 
-class FlutterGemmaModelOptions implements $FlutterGemmaModelOptions {
+base class FlutterGemmaModelOptions {
+  factory FlutterGemmaModelOptions.fromJson(Map<String, dynamic> json) =>
+      $schema.parse(json);
+
+  FlutterGemmaModelOptions._(this._json);
+
   FlutterGemmaModelOptions({
-    this.maxTokens,
-    this.temperature,
-    this.topK,
-    this.topP,
-    this.supportImage,
-    this.supportAudio,
-    this.isThinking,
-    this.randomSeed,
-    this.toolChoice,
-    this.systemInstruction,
-  });
+    int? maxTokens,
+    double? temperature,
+    int? topK,
+    double? topP,
+    bool? supportImage,
+    bool? supportAudio,
+    bool? isThinking,
+    int? randomSeed,
+    String? toolChoice,
+    String? systemInstruction,
+    int? maxFunctionBufferLength,
+  }) {
+    _json = {
+      'maxTokens': ?maxTokens,
+      'temperature': ?temperature,
+      'topK': ?topK,
+      'topP': ?topP,
+      'supportImage': ?supportImage,
+      'supportAudio': ?supportAudio,
+      'isThinking': ?isThinking,
+      'randomSeed': ?randomSeed,
+      'toolChoice': ?toolChoice,
+      'systemInstruction': ?systemInstruction,
+      'maxFunctionBufferLength': ?maxFunctionBufferLength,
+    };
+  }
+
+  late final Map<String, dynamic> _json;
+
+  static const SchemanticType<FlutterGemmaModelOptions> $schema =
+      _FlutterGemmaModelOptionsTypeFactory();
+
+  int? get maxTokens {
+    return _json['maxTokens'] as int?;
+  }
+
+  set maxTokens(int? value) {
+    if (value == null) {
+      _json.remove('maxTokens');
+    } else {
+      _json['maxTokens'] = value;
+    }
+  }
+
+  double? get temperature {
+    return (_json['temperature'] as num?)?.toDouble();
+  }
+
+  set temperature(double? value) {
+    if (value == null) {
+      _json.remove('temperature');
+    } else {
+      _json['temperature'] = value;
+    }
+  }
+
+  int? get topK {
+    return _json['topK'] as int?;
+  }
+
+  set topK(int? value) {
+    if (value == null) {
+      _json.remove('topK');
+    } else {
+      _json['topK'] = value;
+    }
+  }
+
+  double? get topP {
+    return (_json['topP'] as num?)?.toDouble();
+  }
+
+  set topP(double? value) {
+    if (value == null) {
+      _json.remove('topP');
+    } else {
+      _json['topP'] = value;
+    }
+  }
+
+  bool? get supportImage {
+    return _json['supportImage'] as bool?;
+  }
+
+  set supportImage(bool? value) {
+    if (value == null) {
+      _json.remove('supportImage');
+    } else {
+      _json['supportImage'] = value;
+    }
+  }
+
+  bool? get supportAudio {
+    return _json['supportAudio'] as bool?;
+  }
+
+  set supportAudio(bool? value) {
+    if (value == null) {
+      _json.remove('supportAudio');
+    } else {
+      _json['supportAudio'] = value;
+    }
+  }
+
+  bool? get isThinking {
+    return _json['isThinking'] as bool?;
+  }
+
+  set isThinking(bool? value) {
+    if (value == null) {
+      _json.remove('isThinking');
+    } else {
+      _json['isThinking'] = value;
+    }
+  }
+
+  int? get randomSeed {
+    return _json['randomSeed'] as int?;
+  }
+
+  set randomSeed(int? value) {
+    if (value == null) {
+      _json.remove('randomSeed');
+    } else {
+      _json['randomSeed'] = value;
+    }
+  }
+
+  String? get toolChoice {
+    return _json['toolChoice'] as String?;
+  }
+
+  set toolChoice(String? value) {
+    if (value == null) {
+      _json.remove('toolChoice');
+    } else {
+      _json['toolChoice'] = value;
+    }
+  }
+
+  String? get systemInstruction {
+    return _json['systemInstruction'] as String?;
+  }
+
+  set systemInstruction(String? value) {
+    if (value == null) {
+      _json.remove('systemInstruction');
+    } else {
+      _json['systemInstruction'] = value;
+    }
+  }
+
+  int? get maxFunctionBufferLength {
+    return _json['maxFunctionBufferLength'] as int?;
+  }
+
+  set maxFunctionBufferLength(int? value) {
+    if (value == null) {
+      _json.remove('maxFunctionBufferLength');
+    } else {
+      _json['maxFunctionBufferLength'] = value;
+    }
+  }
 
   @override
-  final int? maxTokens;
-  @override
-  final double? temperature;
-  @override
-  final int? topK;
-  @override
-  final double? topP;
-  @override
-  final bool? supportImage;
-  @override
-  final bool? supportAudio;
-  @override
-  final bool? isThinking;
-  @override
-  final int? randomSeed;
-  @override
-  final String? toolChoice;
-  @override
-  final String? systemInstruction;
-
-  static final $schema = _FlutterGemmaModelOptionsSchema();
-
-  factory FlutterGemmaModelOptions.fromJson(Map<String, dynamic> json) {
-    return FlutterGemmaModelOptions(
-      maxTokens: json['maxTokens'] as int?,
-      temperature: (json['temperature'] as num?)?.toDouble(),
-      topK: json['topK'] as int?,
-      topP: (json['topP'] as num?)?.toDouble(),
-      supportImage: json['supportImage'] as bool?,
-      supportAudio: json['supportAudio'] as bool?,
-      isThinking: json['isThinking'] as bool?,
-      randomSeed: json['randomSeed'] as int?,
-      toolChoice: json['toolChoice'] as String?,
-      systemInstruction: json['systemInstruction'] as String?,
-    );
+  String toString() {
+    return _json.toString();
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      if (maxTokens != null) 'maxTokens': maxTokens,
-      if (temperature != null) 'temperature': temperature,
-      if (topK != null) 'topK': topK,
-      if (topP != null) 'topP': topP,
-      if (supportImage != null) 'supportImage': supportImage,
-      if (supportAudio != null) 'supportAudio': supportAudio,
-      if (isThinking != null) 'isThinking': isThinking,
-      if (randomSeed != null) 'randomSeed': randomSeed,
-      if (toolChoice != null) 'toolChoice': toolChoice,
-      if (systemInstruction != null) 'systemInstruction': systemInstruction,
-    };
+    return _json;
   }
 }
 
-class _FlutterGemmaModelOptionsSchema {
-  Map<String, dynamic> jsonSchema() {
-    return {
-      'type': 'object',
-      'description': 'Configuration options for flutter_gemma inference',
-      'properties': {
-        'maxTokens': {
-          'type': 'integer',
-          'description': 'Maximum number of tokens to generate. Defaults to 1024.',
-        },
-        'temperature': {
-          'type': 'number',
-          'description':
-              'Sampling temperature. Higher values increase randomness. Defaults to 0.8.',
-        },
-        'topK': {
-          'type': 'integer',
-          'description': 'Top-K sampling parameter. Defaults to 1.',
-        },
-        'topP': {
-          'type': 'number',
-          'description': 'Top-P (nucleus) sampling parameter.',
-        },
-        'supportImage': {
-          'type': 'boolean',
-          'description': 'Whether the model supports image input (multimodal).',
-        },
-        'supportAudio': {
-          'type': 'boolean',
-          'description':
-              'Whether the model supports audio input (Gemma 3n E4B).',
-        },
-        'isThinking': {
-          'type': 'boolean',
-          'description':
-              'Whether to enable thinking mode (DeepSeek-style reasoning).',
-        },
-        'randomSeed': {
-          'type': 'integer',
-          'description': 'Random seed for deterministic output. Defaults to 1.',
-        },
-        'toolChoice': {
-          'type': 'string',
-          'description':
-              "Tool choice mode: 'auto', 'required', or 'none'. Defaults to 'auto'.",
-          'enum': ['auto', 'required', 'none'],
-        },
-        'systemInstruction': {
-          'type': 'string',
-          'description':
-              'System-level instruction passed natively to flutter_gemma. '
-              'If set, takes priority over system-role messages in the request. '
-              'If not set, system messages from the request are used.',
-        },
-      },
-    };
+base class _FlutterGemmaModelOptionsTypeFactory
+    extends SchemanticType<FlutterGemmaModelOptions> {
+  const _FlutterGemmaModelOptionsTypeFactory();
+
+  @override
+  FlutterGemmaModelOptions parse(Object? json) {
+    return FlutterGemmaModelOptions._(json as Map<String, dynamic>);
   }
+
+  @override
+  JsonSchemaMetadata get schemaMetadata => JsonSchemaMetadata(
+    name: 'FlutterGemmaModelOptions',
+    definition: $Schema
+        .object(
+          properties: {
+            'maxTokens': $Schema.integer(),
+            'temperature': $Schema.number(),
+            'topK': $Schema.integer(),
+            'topP': $Schema.number(),
+            'supportImage': $Schema.boolean(),
+            'supportAudio': $Schema.boolean(),
+            'isThinking': $Schema.boolean(),
+            'randomSeed': $Schema.integer(),
+            'toolChoice': $Schema.string(),
+            'systemInstruction': $Schema.string(),
+            'maxFunctionBufferLength': $Schema.integer(),
+          },
+          required: [],
+          description: 'Configuration options for flutter_gemma inference',
+        )
+        .value,
+    dependencies: [],
+  );
+}
+
+base class FlutterGemmaEmbedConfig {
+  factory FlutterGemmaEmbedConfig.fromJson(Map<String, dynamic> json) =>
+      $schema.parse(json);
+
+  FlutterGemmaEmbedConfig._(this._json);
+
+  FlutterGemmaEmbedConfig({String? preferredBackend}) {
+    _json = {'preferredBackend': ?preferredBackend};
+  }
+
+  late final Map<String, dynamic> _json;
+
+  static const SchemanticType<FlutterGemmaEmbedConfig> $schema =
+      _FlutterGemmaEmbedConfigTypeFactory();
+
+  String? get preferredBackend {
+    return _json['preferredBackend'] as String?;
+  }
+
+  set preferredBackend(String? value) {
+    if (value == null) {
+      _json.remove('preferredBackend');
+    } else {
+      _json['preferredBackend'] = value;
+    }
+  }
+
+  @override
+  String toString() {
+    return _json.toString();
+  }
+
+  Map<String, dynamic> toJson() {
+    return _json;
+  }
+}
+
+base class _FlutterGemmaEmbedConfigTypeFactory
+    extends SchemanticType<FlutterGemmaEmbedConfig> {
+  const _FlutterGemmaEmbedConfigTypeFactory();
+
+  @override
+  FlutterGemmaEmbedConfig parse(Object? json) {
+    return FlutterGemmaEmbedConfig._(json as Map<String, dynamic>);
+  }
+
+  @override
+  JsonSchemaMetadata get schemaMetadata => JsonSchemaMetadata(
+    name: 'FlutterGemmaEmbedConfig',
+    definition: $Schema
+        .object(
+          properties: {'preferredBackend': $Schema.string()},
+          required: [],
+          description: 'Configuration options for flutter_gemma embeddings',
+        )
+        .value,
+    dependencies: [],
+  );
 }

@@ -39,4 +39,16 @@ abstract class $FlutterGemmaModelOptions {
   /// If set, takes priority over any system-role messages in the Genkit request.
   /// If not set, system messages from the request are extracted and used instead.
   String? get systemInstruction;
+
+  /// Maximum buffer size (in tokens) for accumulating streamed function-call
+  /// arguments before parsing. Increase when models emit long function-call
+  /// argument payloads. When null, flutter_gemma uses its built-in default.
+  int? get maxFunctionBufferLength;
+}
+
+/// Configuration options for flutter_gemma embedding generation.
+@Schema(description: 'Configuration options for flutter_gemma embeddings')
+abstract class $FlutterGemmaEmbedConfig {
+  /// Preferred hardware backend hint ('cpu', 'gpu', 'npu').
+  String? get preferredBackend;
 }

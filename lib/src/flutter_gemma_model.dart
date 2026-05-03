@@ -115,6 +115,7 @@ Future<ModelResponse> _executeGeneration({
   };
   final systemInstruction = config?.systemInstruction ??
       extractSystemInstruction(request.messages);
+  final maxFunctionBufferLength = config?.maxFunctionBufferLength;
 
   // Get or create InferenceModel (cached if params match).
   final needsNewModel = cachedModel == null ||
@@ -152,6 +153,7 @@ Future<ModelResponse> _executeGeneration({
     modelType: modelType,
     toolChoice: gemmaToolChoice,
     systemInstruction: systemInstruction,
+    maxFunctionBufferLength: maxFunctionBufferLength,
   );
 
   // Convert and add messages.

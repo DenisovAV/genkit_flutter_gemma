@@ -1,7 +1,6 @@
 import 'package:flutter_gemma/flutter_gemma.dart' as gemma;
 import 'package:genkit/plugin.dart';
 
-import 'flutter_gemma_embed_options.dart';
 import 'flutter_gemma_embedder.dart';
 import 'flutter_gemma_model.dart';
 import 'flutter_gemma_options.dart';

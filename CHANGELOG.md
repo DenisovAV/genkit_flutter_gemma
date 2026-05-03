@@ -1,3 +1,14 @@
+## 0.3.0
+
+- Bump flutter_gemma dependency to ^0.14.2 (dart:ffi rewrite on desktop, ~5× faster cold start; fixes macOS `flutter test` install_name_tool failure)
+- Add `maxFunctionBufferLength` config option for large tool-call argument payloads
+- Update `example/macos/Podfile` post_install for flutter_gemma 0.14.2 framework bundling
+
+## 0.2.2
+
+- Bump flutter_gemma dependency to ^0.13.2
+- Update README: document Gemma 4 and Phi-4 support, clarify thinking mode availability
+
 ## 0.2.1
 
 - Bump flutter_gemma dependency to ^0.13.1 (LiteRT-LM 0.10.0, Gemma 4 thinking mode fix)

@@ -1,7 +1,7 @@
 import 'package:flutter_gemma/flutter_gemma.dart' as gemma;
 import 'package:genkit/plugin.dart';
 
-import 'flutter_gemma_embed_options.dart';
+import 'flutter_gemma_options.dart';
 import 'flutter_gemma_runtime.dart';
 
 /// Creates a Genkit [Embedder] action backed by flutter_gemma's embedding model.

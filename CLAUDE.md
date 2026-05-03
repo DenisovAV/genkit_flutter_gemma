@@ -47,7 +47,9 @@ Three converters handle the Genkit ↔ flutter_gemma type boundary:
 
 ### Config options
 
-`FlutterGemmaModelOptions` is defined via `@Schema()` annotation in `flutter_gemma_options.dart`. The `.g.dart` file is **manually maintained** (build_runner is broken for this project) — update it by hand when changing the schema.
+`FlutterGemmaModelOptions` is defined via `@Schema()` annotation in `flutter_gemma_options.dart`. Generated via `schemantic` + `build_runner`.
+
+**`build_runner` note**: Use `dart pub global run build_runner build --delete-conflicting-outputs` (run `dart pub global activate build_runner` once first). The globally activated build_runner runs as an AOT executable which avoids any native_assets bundling issues.
 
 ### Testing pattern
 

@@ -43,17 +43,16 @@ library;
 
 import 'package:genkit/genkit.dart';
 
-import 'src/flutter_gemma_embed_options.dart';
 import 'src/flutter_gemma_options.dart';
 import 'src/flutter_gemma_plugin.dart';
 
-export 'src/flutter_gemma_embed_options.dart' show FlutterGemmaEmbedConfig;
+export 'src/flutter_gemma_options.dart'
+    show FlutterGemmaModelOptions, FlutterGemmaEmbedConfig;
 export 'src/flutter_gemma_plugin.dart'
     show
         GenkitFlutterGemmaPlugin,
         FlutterGemmaModelConfig,
         FlutterGemmaEmbedderConfig;
-export 'src/flutter_gemma_options.dart' show FlutterGemmaModelOptions;
 export 'src/flutter_gemma_runtime.dart'
     show FlutterGemmaRuntime, DefaultFlutterGemmaRuntime;
 

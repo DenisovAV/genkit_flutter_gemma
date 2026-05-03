@@ -205,6 +205,28 @@ void main() {
       expect(fakeModel.lastToolChoice, gemma.ToolChoice.auto);
     });
 
+    test('passes maxFunctionBufferLength to createChat when set', () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(ModelRequest(
+        messages: [Message(role: Role.user, content: [TextPart(text: 'Hi')])],
+        config: {'maxFunctionBufferLength': 4096},
+      ));
+
+      expect(fakeModel.lastMaxFunctionBufferLength, 4096);
+    });
+
+    test('passes null maxFunctionBufferLength to createChat when not set',
+        () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(simpleRequest());
+
+      expect(fakeModel.lastMaxFunctionBufferLength, isNull);
+    });
+
     test('blocking: returns parallel function call response', () async {
       fakeChat.blockingResponse = const gemma.ParallelFunctionCallResponse(
         calls: [

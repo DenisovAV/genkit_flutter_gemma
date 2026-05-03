@@ -81,8 +81,6 @@ post_install do |installer|
           # Set install_name to the @rpath the patched LiteRtLm dlopens.
           install_name_tool -id "@rpath/${base}.framework/Versions/A/${base}" \\
             "${fw_dir}/Versions/A/${base}" 2>/dev/null || true
-          # Re-sign after install_name_tool invalidated the existing signature.
-          codesign --force --sign - "${fw_dir}/Versions/A/${base}" 2>/dev/null || true
           # Symlinks Apple expects in a versioned framework bundle.
           (cd "${fw_dir}" && ln -sfh A Versions/Current && ln -sfh "Versions/Current/${base}" "${base}" && ln -sfh "Versions/Current/Resources" Resources)
           # Minimal Info.plist so the framework is well-formed.

@@ -24,6 +24,7 @@ base class FlutterGemmaModelOptions {
     String? toolChoice,
     String? systemInstruction,
     int? maxFunctionBufferLength,
+    bool? enableSpeculativeDecoding,
   }) {
     _json = {
       'maxTokens': ?maxTokens,
@@ -37,6 +38,7 @@ base class FlutterGemmaModelOptions {
       'toolChoice': ?toolChoice,
       'systemInstruction': ?systemInstruction,
       'maxFunctionBufferLength': ?maxFunctionBufferLength,
+      'enableSpeculativeDecoding': ?enableSpeculativeDecoding,
     };
   }
 
@@ -177,6 +179,18 @@ base class FlutterGemmaModelOptions {
     }
   }
 
+  bool? get enableSpeculativeDecoding {
+    return _json['enableSpeculativeDecoding'] as bool?;
+  }
+
+  set enableSpeculativeDecoding(bool? value) {
+    if (value == null) {
+      _json.remove('enableSpeculativeDecoding');
+    } else {
+      _json['enableSpeculativeDecoding'] = value;
+    }
+  }
+
   @override
   String toString() {
     return _json.toString();
@@ -213,6 +227,7 @@ base class _FlutterGemmaModelOptionsTypeFactory
             'toolChoice': $Schema.string(),
             'systemInstruction': $Schema.string(),
             'maxFunctionBufferLength': $Schema.integer(),
+            'enableSpeculativeDecoding': $Schema.boolean(),
           },
           required: [],
           description: 'Configuration options for flutter_gemma inference',

@@ -29,6 +29,7 @@ Model createFlutterGemmaModel({
   int? cachedMaxTokens;
   bool? cachedSupportImage;
   bool? cachedSupportAudio;
+  bool? cachedEnableSpeculativeDecoding;
 
   // Future-chain lock: each caller awaits the previous one, ensuring
   // only one generation runs at a time against the native model.
@@ -60,11 +61,13 @@ Model createFlutterGemmaModel({
           cachedMaxTokens: cachedMaxTokens,
           cachedSupportImage: cachedSupportImage,
           cachedSupportAudio: cachedSupportAudio,
-          onModelCached: (model, maxTokens, supportImage, supportAudio) {
+          cachedEnableSpeculativeDecoding: cachedEnableSpeculativeDecoding,
+          onModelCached: (model, maxTokens, supportImage, supportAudio, enableSpeculativeDecoding) {
             cachedModel = model;
             cachedMaxTokens = maxTokens;
             cachedSupportImage = supportImage;
             cachedSupportAudio = supportAudio;
+            cachedEnableSpeculativeDecoding = enableSpeculativeDecoding;
           },
         );
       } finally {
@@ -84,7 +87,8 @@ Future<ModelResponse> _executeGeneration({
   required int? cachedMaxTokens,
   required bool? cachedSupportImage,
   required bool? cachedSupportAudio,
-  required void Function(gemma.InferenceModel, int, bool, bool) onModelCached,
+  required bool? cachedEnableSpeculativeDecoding,
+  required void Function(gemma.InferenceModel, int, bool, bool, bool?) onModelCached,
 }) async {
   // Parse config from the untyped Map.
   final configMap = request.config;
@@ -108,6 +112,7 @@ Future<ModelResponse> _executeGeneration({
   final supportImage = config?.supportImage ?? false;
   final supportAudio = config?.supportAudio ?? false;
   final isThinking = config?.isThinking ?? false;
+  final enableSpeculativeDecoding = config?.enableSpeculativeDecoding;
   final gemmaToolChoice = switch (config?.toolChoice) {
     'required' => gemma.ToolChoice.required,
     'none' => gemma.ToolChoice.none,
@@ -121,7 +126,8 @@ Future<ModelResponse> _executeGeneration({
   final needsNewModel = cachedModel == null ||
       cachedMaxTokens != maxTokens ||
       cachedSupportImage != supportImage ||
-      cachedSupportAudio != supportAudio;
+      cachedSupportAudio != supportAudio ||
+      cachedEnableSpeculativeDecoding != enableSpeculativeDecoding;
 
   gemma.InferenceModel model;
   if (needsNewModel) {
@@ -129,8 +135,9 @@ Future<ModelResponse> _executeGeneration({
       maxTokens: maxTokens,
       supportImage: supportImage,
       supportAudio: supportAudio,
+      enableSpeculativeDecoding: enableSpeculativeDecoding,
     );
-    onModelCached(model, maxTokens, supportImage, supportAudio);
+    onModelCached(model, maxTokens, supportImage, supportAudio, enableSpeculativeDecoding);
   } else {
     model = cachedModel;
   }

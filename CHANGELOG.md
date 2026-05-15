@@ -1,3 +1,8 @@
+## 0.3.1
+
+- Bump flutter_gemma dependency to ^0.15.1 (LiteRT-LM 0.11.0, MTP speculative decoding for Gemma 4, multi-image input, Android GPU fix, desktop storage path fix)
+- Add `enableSpeculativeDecoding` config option for Gemma 4 E2B/E4B MTP toggle (`null` = model default, `true`/`false` = force on/off)
+
 ## 0.3.0
 
 - Bump flutter_gemma dependency to ^0.14.2 (dart:ffi rewrite on desktop, ~5× faster cold start; fixes macOS `flutter test` install_name_tool failure)

@@ -15,14 +15,18 @@ class FakeRuntime implements FlutterGemmaRuntime {
   int getActiveModelCallCount = 0;
   int getActiveEmbedderCallCount = 0;
 
+  bool? lastEnableSpeculativeDecoding;
+
   @override
   Future<gemma.InferenceModel> getActiveModel({
     int maxTokens = 1024,
     bool supportImage = false,
     bool supportAudio = false,
+    bool? enableSpeculativeDecoding,
   }) async {
     getActiveModelCallCount++;
     modelToReturn._maxTokens = maxTokens;
+    lastEnableSpeculativeDecoding = enableSpeculativeDecoding;
     return modelToReturn;
   }
 
@@ -137,7 +141,7 @@ class FakeInferenceChat extends gemma.InferenceChat {
   }
 
   @override
-  Future<void> addQueryChunk(gemma.Message message, [bool noTool = false]) async {
+  Future<void> addQueryChunk(gemma.Message message, [bool noTool = false, bool prefix = false]) async {
     addQueryChunkCallCount++;
     receivedMessages.add(message);
   }

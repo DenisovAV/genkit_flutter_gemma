@@ -11,6 +11,7 @@ abstract class FlutterGemmaRuntime {
     int maxTokens = 1024,
     bool supportImage = false,
     bool supportAudio = false,
+    bool? enableSpeculativeDecoding,
   });
 
   /// Retrieves the active embedding model.
@@ -28,11 +29,13 @@ class DefaultFlutterGemmaRuntime implements FlutterGemmaRuntime {
     int maxTokens = 1024,
     bool supportImage = false,
     bool supportAudio = false,
+    bool? enableSpeculativeDecoding,
   }) {
     return gemma.FlutterGemma.getActiveModel(
       maxTokens: maxTokens,
       supportImage: supportImage,
       supportAudio: supportAudio,
+      enableSpeculativeDecoding: enableSpeculativeDecoding,
     );
   }
 

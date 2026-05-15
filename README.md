@@ -95,6 +95,7 @@ final response = await ai.generate(
 | `toolChoice` | `String?` | `'auto'` | Tool calling mode: `'auto'`, `'required'`, `'none'` |
 | `systemInstruction` | `String?` | null | System-level instruction (overrides system-role messages) |
 | `maxFunctionBufferLength` | `int?` | null | Max token buffer for streaming tool-call arguments (increase for large payloads) |
+| `enableSpeculativeDecoding` | `bool?` | null | MTP speculative decoding for Gemma 4 E2B/E4B (null = model default, true/false = force on/off) |
 
 ## Streaming
 

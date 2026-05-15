@@ -44,6 +44,11 @@ abstract class $FlutterGemmaModelOptions {
   /// arguments before parsing. Increase when models emit long function-call
   /// argument payloads. When null, flutter_gemma uses its built-in default.
   int? get maxFunctionBufferLength;
+
+  /// Multi-Token Prediction (speculative decoding) toggle for Gemma 4 E2B/E4B
+  /// (LiteRT-LM v0.11.0+). `null` honors the model's default; `true`/`false`
+  /// forces on/off. Ignored by models without an embedded MTP drafter.
+  bool? get enableSpeculativeDecoding;
 }
 
 /// Configuration options for flutter_gemma embedding generation.

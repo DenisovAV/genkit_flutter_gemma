@@ -262,6 +262,21 @@ void main() {
       expect(runtime.getActiveModelCallCount, 2);
     });
 
+    test('recreates model when enableSpeculativeDecoding reverts to null',
+        () async {
+      fakeChat.blockingResponse = const gemma.TextResponse('ok');
+      final model = buildModel();
+
+      await model(ModelRequest(
+        messages: [Message(role: Role.user, content: [TextPart(text: 'Hi')])],
+        config: {'enableSpeculativeDecoding': true},
+      ));
+      await model(simpleRequest());
+
+      expect(runtime.getActiveModelCallCount, 2);
+      expect(runtime.lastEnableSpeculativeDecoding, isNull);
+    });
+
     test('blocking: returns parallel function call response', () async {
       fakeChat.blockingResponse = const gemma.ParallelFunctionCallResponse(
         calls: [

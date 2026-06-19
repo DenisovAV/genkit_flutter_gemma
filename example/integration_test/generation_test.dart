@@ -3,7 +3,6 @@
 // Integration test: generation scenarios through Genkit API.
 // Run: flutter test integration_test/generation_test.dart -d <device>
 
-import 'package:flutter_gemma/flutter_gemma.dart' hide Message;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genkit/genkit.dart';
 import 'package:genkit_flutter_gemma/genkit_flutter_gemma.dart';
@@ -16,7 +15,7 @@ void main() {
   late Genkit ai;
 
   testWidgets('Generation: setUpAll — install model', (tester) async {
-    await FlutterGemma.initialize();
+    await initializeGemmaForTest();
     await ensureModelInstalled();
     ai = createTestGenkit();
   }, timeout: const Timeout(kInstallTimeout));

@@ -1,5 +1,4 @@
 import 'dart:developer' as developer;
-import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -54,8 +53,6 @@ class AppState extends ChangeNotifier {
       'https://huggingface.co/litert-community/embeddinggemma-300m/resolve/main/embeddinggemma-300M_seq256_mixed-precision.tflite';
   String embedderTokenizerUrl =
       'https://huggingface.co/litert-community/embeddinggemma-300m/resolve/main/sentencepiece.model';
-  String embedderIosTokenizerUrl =
-      'https://github.com/DenisovAV/flutter_gemma/releases/download/v0.12.5/embeddinggemma_tokenizer.json';
 
   int _maxTokens = 1024;
   int get maxTokens => _maxTokens;
@@ -189,18 +186,13 @@ class AppState extends ChangeNotifier {
         token: hfToken.isNotEmpty ? hfToken : null,
       );
 
-      final withTokenizer = (!kIsWeb &&
-              Platform.isIOS &&
-              embedderIosTokenizerUrl.isNotEmpty)
-          ? installer.tokenizerFromNetwork(
-              embedderTokenizerUrl,
-              token: hfToken.isNotEmpty ? hfToken : null,
-              iosPath: embedderIosTokenizerUrl,
-            )
-          : installer.tokenizerFromNetwork(
-              embedderTokenizerUrl,
-              token: hfToken.isNotEmpty ? hfToken : null,
-            );
+      // flutter_gemma 0.15.2+ unified embedding on a single LiteRT C API path,
+      // so the per-platform iOS tokenizer (iosPath) was dropped — the same
+      // tokenizer source now works on every platform.
+      final withTokenizer = installer.tokenizerFromNetwork(
+        embedderTokenizerUrl,
+        token: hfToken.isNotEmpty ? hfToken : null,
+      );
 
       await withTokenizer.install();
 

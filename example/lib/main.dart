@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_gemma_embeddings/flutter_gemma_embeddings.dart';
+import 'package:flutter_gemma_litertlm/flutter_gemma_litertlm.dart';
+import 'package:flutter_gemma_mediapipe/flutter_gemma_mediapipe.dart';
 
 import 'app_state.dart';
 import 'screens/chat_screen.dart';
@@ -9,7 +12,14 @@ import 'screens/tools_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterGemma.initialize();
+  // flutter_gemma 1.0.0: engines and embedding backends are opt-in. Register
+  // the providers from the packages this example depends on — MediaPipe for
+  // .task/.bin models, LiteRT-LM for .litertlm models, and the LiteRT
+  // embedding backend for the embeddings demo.
+  await FlutterGemma.initialize(
+    inferenceEngines: const [LiteRtLmEngine(), MediaPipeEngine()],
+    embeddingBackends: const [LiteRtEmbeddingBackend()],
+  );
   runApp(const App());
 }
 

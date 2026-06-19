@@ -5,6 +5,9 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/foundation.dart' show kIsWeb, debugPrint;
 import 'package:flutter_gemma/flutter_gemma.dart';
+import 'package:flutter_gemma_embeddings/flutter_gemma_embeddings.dart';
+import 'package:flutter_gemma_litertlm/flutter_gemma_litertlm.dart';
+import 'package:flutter_gemma_mediapipe/flutter_gemma_mediapipe.dart';
 import 'package:genkit/genkit.dart';
 import 'package:genkit_flutter_gemma/genkit_flutter_gemma.dart';
 import 'package:integration_test/integration_test.dart';
@@ -12,6 +15,18 @@ import 'package:integration_test/integration_test.dart';
 /// Call once in main() of each test file.
 void initIntegrationTest() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+}
+
+/// Initialize flutter_gemma with the opt-in engines/backends the tests need.
+///
+/// flutter_gemma 1.0.0 split engines and embedding backends into separate
+/// packages; core registers none by default, so tests must register the
+/// providers explicitly before installing or running any model.
+Future<void> initializeGemmaForTest() async {
+  await FlutterGemma.initialize(
+    inferenceEngines: const [LiteRtLmEngine(), MediaPipeEngine()],
+    embeddingBackends: const [LiteRtEmbeddingBackend()],
+  );
 }
 
 /// Model URLs for FunctionGemma 270M IT (284MB, no auth required).

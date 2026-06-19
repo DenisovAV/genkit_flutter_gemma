@@ -55,6 +55,14 @@ class FakeInferenceModel extends gemma.InferenceModel {
   gemma.ModelFileType get fileType => gemma.ModelFileType.task;
 
   @override
+  gemma.PreferredBackend? get activeBackend => null;
+
+  @override
+  void addCloseListener(void Function() listener) {
+    // No-op: the fake holds no native handle to close.
+  }
+
+  @override
   gemma.InferenceModelSession? get session => null;
 
   @override
@@ -193,6 +201,11 @@ class FakeEmbeddingModel implements gemma.EmbeddingModel {
 
   @override
   Future<int> getDimension() async => 256;
+
+  @override
+  void addCloseListener(void Function() listener) {
+    // No-op: the fake holds no native handle to close.
+  }
 
   @override
   Future<void> close() async {}

@@ -1,3 +1,11 @@
+## 0.4.0
+
+- Bump flutter_gemma dependency to ^1.0.0 (modular package split: core + opt-in engine/backend packages)
+- No changes to the public Genkit plugin API — `getActiveModel`/`getActiveEmbedder` signatures are unchanged, so all existing model/embedder config options keep working
+- **App setup change**: flutter_gemma 1.0.0 makes inference engines and embedding backends opt-in. Consuming apps must now register them in `FlutterGemma.initialize()` and add the relevant packages (`flutter_gemma_litertlm`, `flutter_gemma_mediapipe`, `flutter_gemma_embeddings`). See the updated example and README.
+- Update example app to register `LiteRtLmEngine`, `MediaPipeEngine`, and `LiteRtEmbeddingBackend`
+- Drop the removed iOS-specific embedding tokenizer path (`iosPath`) — flutter_gemma 0.15.2+ unified embedding on a single LiteRT C API path
+
 ## 0.3.1
 
 - Bump flutter_gemma dependency to ^0.15.1 (LiteRT-LM 0.11.0, MTP speculative decoding for Gemma 4, multi-image input, Android GPU fix, desktop storage path fix)

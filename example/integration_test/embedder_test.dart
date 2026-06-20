@@ -6,7 +6,6 @@
 // Requires embedding model assets in example/assets/models/:
 // - embeddinggemma-300M_seq256_mixed-precision.tflite
 // - sentencepiece.model
-// - embeddinggemma_tokenizer.json (iOS)
 
 import 'dart:math' as math;
 
@@ -37,14 +36,13 @@ void main() {
   }
 
   testWidgets('Embedder: setUpAll — install model + embedder', (tester) async {
-    await FlutterGemma.initialize();
+    await initializeGemmaForTest();
     await ensureModelInstalled();
 
     await FlutterGemma.installEmbedder()
         .modelFromAsset(
             'assets/models/embeddinggemma-300M_seq256_mixed-precision.tflite')
-        .tokenizerFromAsset('assets/models/sentencepiece.model',
-            iosPath: 'assets/models/embeddinggemma_tokenizer.json')
+        .tokenizerFromAsset('assets/models/sentencepiece.model')
         .install();
 
     ai = createTestGenkitWithEmbedder();

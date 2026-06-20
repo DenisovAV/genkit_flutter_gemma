@@ -16,7 +16,7 @@ void main() {
   late GenkitFlutterGemmaPlugin plugin;
 
   testWidgets('DirectAction: setUpAll — install model', (tester) async {
-    await FlutterGemma.initialize();
+    await initializeGemmaForTest();
     await ensureModelInstalled();
 
     plugin = GenkitFlutterGemmaPlugin(models: [

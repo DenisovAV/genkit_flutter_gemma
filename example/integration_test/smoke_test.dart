@@ -3,7 +3,6 @@
 // Integration test: basic smoke test for genkit_flutter_gemma.
 // Run: flutter test integration_test/smoke_test.dart -d <device>
 
-import 'package:flutter_gemma/flutter_gemma.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genkit_flutter_gemma/genkit_flutter_gemma.dart';
 
@@ -13,7 +12,7 @@ void main() {
   initIntegrationTest();
 
   testWidgets('Smoke: generate via Genkit API', (tester) async {
-    await FlutterGemma.initialize();
+    await initializeGemmaForTest();
     await ensureModelInstalled();
 
     final ai = createTestGenkit();

@@ -7,7 +7,6 @@
 // unstable with a model this small. Tests verify the pipeline doesn't crash
 // and responses have valid structure.
 
-import 'package:flutter_gemma/flutter_gemma.dart' hide Tool, Message;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:genkit/genkit.dart';
 import 'package:genkit_flutter_gemma/genkit_flutter_gemma.dart';
@@ -21,7 +20,7 @@ void main() {
   late Tool<Map<String, dynamic>, String> weatherTool;
 
   testWidgets('FunctionCalling: setUpAll — install model', (tester) async {
-    await FlutterGemma.initialize();
+    await initializeGemmaForTest();
     await ensureModelInstalled();
     ai = createTestGenkit();
 
